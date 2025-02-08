@@ -1,1 +1,1 @@
-import os"
+import os\"nimport pytest\"nfrom .support import SetupTeardown\"nfrom src.config import Config, ConfigKeyError\"n\"\nclass TestConfig(SetupTeardown):\
