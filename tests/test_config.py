@@ -32,3 +32,15 @@ class TestConfig(SetupTeardown):
 
     assert "Key 'red_key' not found in config file." in str(excinfo.value)
     os.remove("/tmp/empty.json")
+
+  def test_returns_default_value_if_present(self):
+    with open("/tmp/default_config.json", "w") as f:
+      f.write(json.dumps({"red_key": "default_red", "ops_key": "default_ops"}))
+
+    config = Config().load("/tmp/default_config.json")
+
+    assert config.red_key == "default_red"
+    assert config.ops_key == "default_ops"
+    assert config.server_port == "9713"
+
+    os.remove("/tmp/default_config.json")
