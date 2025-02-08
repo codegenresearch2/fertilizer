@@ -38,7 +38,8 @@ class TestConfig(SetupTeardown):
     config = Config()
     config._json = {
       "red_key": "default_red",
-      "ops_key": "default_ops"
+      "ops_key": "default_ops",
+      "server_port": "9713"
     }
 
     assert config.red_key == "default_red"
