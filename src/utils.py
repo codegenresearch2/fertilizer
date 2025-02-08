@@ -1,1 +1,1 @@
-from src.utils import url_join\n\ndef flatten(arg):\n  if not isinstance(arg, list):\n    return [arg]\n  return [x for sub in arg for x in flatten(sub)]\n\n# Ensure the url_join function is defined as per the gold code
+from src.utils import url_join\\ndef flatten(arg):\\n  if not isinstance(arg, list):\\n    return [arg]\\n  return [x for sub in arg for x in flatten(sub)]
