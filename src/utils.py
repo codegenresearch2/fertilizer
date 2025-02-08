@@ -1,1 +1,1 @@
-from src.utils import url_join\\ndef flatten(arg):\\"""Flattens a nested list."""\\\\\n  if not isinstance(arg, list):\\\\\n    return [arg]\\\\\n  return [x for sub in arg for x in flatten(sub)]
+from src.utils import url_join\ndef flatten(arg):\"\"\"Flattens a nested list.\"\"\"\n  if not isinstance(arg, list):\n    return [arg]\n  return [x for sub in arg for x in flatten(sub)]
