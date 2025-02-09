@@ -69,7 +69,7 @@ class Qbittorrent(TorrentClient):
             else:
                 payload = {}
 
-            response = requests.post(url_join(href, 'auth/login'), data=payload)
+            response = requests.post(f'{href}/auth/login', data=payload)
             response.raise_for_status()
         except requests.RequestException as e:
             raise TorrentClientAuthenticationError(f'qBittorrent login failed: {e}')
@@ -90,7 +90,7 @@ class Qbittorrent(TorrentClient):
 
         try:
             response = requests.post(
-                url_join(href, path),
+                f'{href}/{path}',
                 headers=CaseInsensitiveDict({'Cookie': f'SID={self._qbit_cookie}'}),
                 data=data,
                 files=files,
