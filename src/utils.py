@@ -1,6 +1,5 @@
 from src.utils import url_join
 
-
 def flatten(arg):
   if not isinstance(arg, list):
     return [arg]
