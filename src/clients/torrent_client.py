@@ -1,6 +1,7 @@
-from src.utils import url_join
 import os
 from urllib.parse import urlparse, unquote
+
+from src.utils import url_join
 
 
 class TorrentClient:
