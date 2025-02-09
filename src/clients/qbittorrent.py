@@ -5,6 +5,7 @@ from requests.structures import CaseInsensitiveDict
 
 from ..utils import url_join
 from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
+from ..parser import get_bencoded_data, calculate_infohash
 from .torrent_client import TorrentClient
 
 
