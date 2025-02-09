@@ -1,5 +1,4 @@
 import json
-import os
 
 from .errors import ConfigKeyError
 
@@ -14,7 +13,7 @@ class Config:
 
   def load(self, config_filepath: str):
     if not os.path.exists(config_filepath):
-      raise FileNotFoundError(f"{config_filepath} does not exist.")
+      raise FileNotFoundError(f'{config_filepath} does not exist.')
 
     with open(config_filepath, "r", encoding="utf-8") as f:
       self._json = json.loads(f.read())
@@ -31,13 +30,10 @@ class Config:
 
   @property
   def server_port(self) -> str:
-    return self.__get_key("port", "9713")
+    return self.__get_key("server_port")
 
-  def __get_key(self, key, default=None):
+  def __get_key(self, key) -> str:
     try:
       return self._json[key]
     except KeyError:
-      if default is not None:
-        return default
-
-      raise ConfigKeyError(f"Key '{key}' not found in config file.")
+      raise ConfigKeyError(f'Key \'{key}\' not found in config file.')
