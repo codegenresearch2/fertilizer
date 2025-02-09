@@ -90,7 +90,7 @@ class Qbittorrent(TorrentClient):
 
         try:
             response = requests.post(
-                f'{href}/{path}',
+                url_join(href, path),
                 headers=CaseInsensitiveDict({'Cookie': f'SID={self._qbit_cookie}'}),
                 data=data,
                 files=files,
