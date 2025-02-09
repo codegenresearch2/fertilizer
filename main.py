@@ -14,11 +14,13 @@ def cli_entrypoint(args):
     red_api, ops_api = __verify_api_keys(config)
 
     if args.server:
-      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
+      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=config.server_port)
     elif args.input_file:
-      print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api) or "No new torrents generated.")
+      result = scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api)
+      print(result or 'No new torrents generated.')
     elif args.input_directory:
-      print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api) or "No new torrents generated.")
+      result = scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api)
+      print(result or 'No new torrents generated.')
   except Exception as e:
     print(f"{Fore.RED}{str(e) or 'An error occurred' if not isinstance(e, KeyboardInterrupt) else 'Exiting...' }{Fore.RESET}")
     exit(1 if not isinstance(e, KeyboardInterrupt) else 0)
