@@ -51,6 +51,9 @@ def generate_new_torrent_from_file(
   except Exception:
     raise TorrentDecodingError("Error decoding torrent file")
 
+  if b"info" not in torrent_data:
+    raise TorrentDecodingError("Torrent data does not contain 'info' key")
+
   tracker = get_origin_tracker(torrent_data)
   if tracker is None:
     raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
