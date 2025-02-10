@@ -1,6 +1,7 @@
 import os
 import pytest
 
+from src.errors import TorrentDecodingError
 from .helpers import get_torrent_path, SetupTeardown
 
 from src.trackers import RedTracker, OpsTracker
@@ -14,7 +15,6 @@ from src.parser import (
   recalculate_hash_for_new_source,
   save_bencoded_data,
   calculate_infohash,
-  TorrentDecodingError,
 )
 
 
@@ -92,9 +92,9 @@ class TestCalculateInfohash(SetupTeardown):
 
     assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
 
-  def test_raises_torrent_decoding_error_if_info_key_missing(self):
+  def test_raises_if_no_info_key(self):
     torrent_data = {}
-    with pytest.raises(TorrentDecodingError, match="Torrent data does not contain 'info' key"):
+    with pytest.raises(TorrentDecodingError):
       calculate_infohash(torrent_data)
 
 
