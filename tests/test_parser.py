@@ -1,3 +1,4 @@
+import pytest
 import os
 
 from .helpers import get_torrent_path, SetupTeardown
@@ -93,7 +94,7 @@ class TestCalculateInfohash(SetupTeardown):
 
   def test_raises_torrent_decoding_error_if_info_key_missing(self):
     torrent_data = {}
-    with self.assertRaises(TorrentDecodingError):
+    with pytest.raises(TorrentDecodingError, match="Torrent data does not contain 'info' key"):
       calculate_infohash(torrent_data)
 
 
