@@ -52,3 +52,8 @@ class TorrentClientError(Exception):
 
 class TorrentInjectionError(Exception):
     pass
+
+
+# Added class definition for TorrentClientAuthenticationError
+class TorrentClientAuthenticationError(Exception):
+    pass
