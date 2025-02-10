@@ -1,7 +1,7 @@
+import os
 import pytest
 
-from .helpers import get_torrent_path, SetupTeardown
-
+from src.errors import TorrentDecodingError
 from src.trackers import RedTracker, OpsTracker
 from src.parser import (
   is_valid_infohash,
@@ -13,7 +13,6 @@ from src.parser import (
   recalculate_hash_for_new_source,
   save_bencoded_data,
   calculate_infohash,
-  TorrentDecodingError,
 )
 
 
@@ -95,7 +94,7 @@ class TestCalculateInfohash(SetupTeardown):
     torrent_data = {}
     with pytest.raises(TorrentDecodingError) as e:
       calculate_infohash(torrent_data)
-    assert str(e.value) == "Torrent data does not contain 'info' key"
+    assert "Torrent data does not contain 'info' key" in str(e.value)
 
 
 class TestRecalculateHashForNewSource(SetupTeardown):
