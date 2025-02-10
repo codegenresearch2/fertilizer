@@ -8,15 +8,19 @@ from src.scanner import scan_torrent_directory, scan_torrent_file
 from src.webserver import run_webserver
 
 def cli_entrypoint(args):
-    config = Config().load(args.config_file)
-    red_api, ops_api = __verify_api_keys(config)
+    try:
+        config = Config().load(args.config_file)
+        red_api, ops_api = __verify_api_keys(config)
 
-    if args.server:
-        run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=config.server_port)
-    elif args.input_file:
-        print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
-    elif args.input_directory:
-        print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
+        if args.server:
+            run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=config.server_port)
+        elif args.input_file:
+            print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
+        elif args.input_directory:
+            print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
+    except Exception as e:
+        print(f"{Fore.RED}An error occurred: {str(e)}{Fore.RESET}")
+        exit(1)
 
 def __verify_api_keys(config):
     # Retrieve API keys from the configuration object
@@ -24,6 +28,7 @@ def __verify_api_keys(config):
     ops_api = OpsAPI(config.ops_key)
 
     # Perform a lookup with the API to verify the keys and cache the announce URL for future use
+    # If the lookup fails, an exception will be raised, which will be caught in the cli_entrypoint function
     red_api.announce_url
     ops_api.announce_url
 
@@ -36,7 +41,4 @@ if __name__ == "__main__":
         cli_entrypoint(args)
     except KeyboardInterrupt:
         print(f"{Fore.RED}Exiting...{Fore.RESET}")
-        exit(1)
-    except Exception as e:
-        print(f"{Fore.RED}{str(e)}{Fore.RESET}")
         exit(1)
