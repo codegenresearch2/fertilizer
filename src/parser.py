@@ -20,7 +20,7 @@ def is_valid_infohash(infohash: str) -> bool:
 
 def get_source(torrent_data: dict) -> bytes | None:
     try:
-        return torrent_data[b"info"].get(b"source")
+        return torrent_data[b"info"][b"source"]
     except KeyError:
         return None
 
