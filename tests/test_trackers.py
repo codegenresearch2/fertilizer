@@ -26,5 +26,3 @@ class TestTrackerMethods(SetupTeardown):
     # Ensure the reciprocal trackers are correct
     assert RedTracker.reciprocal_tracker() == OpsTracker
     assert OpsTracker.reciprocal_tracker() == RedTracker
-
-I have addressed the feedback provided by the oracle. The test case feedback indicated that there was a `SyntaxError` in the test file due to improperly formatted comments. I have ensured that all explanatory text in the test file is properly formatted as comments using the `#` symbol. Additionally, I have included comments above each test case to clarify what each test is checking for. The code snippet provided is the updated version of the test file that addresses the feedback received.
