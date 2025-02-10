@@ -8,9 +8,10 @@ from .torrent_client import TorrentClient
 from requests.exceptions import RequestException
 from requests.structures import CaseInsensitiveDict
 
+# Define error codes as constants
 ERROR_CODES = {
-    1: "Authentication failed",
-    2: "Timeout error",
+    "AUTHENTICATION_FAILED": 1,
+    "TIMEOUT_ERROR": 2,
     # Add other error codes as needed
 }
 
@@ -103,7 +104,9 @@ class Deluge(TorrentClient):
         try:
             auth_response = self.__wrap_request("auth.login", [password])
         except TorrentClientError as client_error:
-            raise TorrentClientAuthenticationError(f"Failed to authenticate: {client_error}")
+            if client_error.code == ERROR_CODES["AUTHENTICATION_FAILED"]:
+                raise TorrentClientAuthenticationError(f"Authentication failed: {client_error.message}")
+            raise
 
         if not auth_response:
             raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
@@ -152,7 +155,7 @@ class Deluge(TorrentClient):
         except TorrentClientError as client_error:
             if "Authentication" in str(client_error):
                 raise TorrentClientAuthenticationError(str(client_error)) from client_error
-            raise TorrentClientError(str(client_error)) from client_error
+            raise
 
     def __request(self, method, params=[]):
         href, _, _ = self._extract_credentials_from_url(self._rpc_url)
@@ -185,7 +188,7 @@ class Deluge(TorrentClient):
             raise TorrentClientError(f"Deluge method {method} response was non-JSON") from json_parse_error
 
         if "error" in json_response and json_response["error"]:
-            if json_response["error"]["code"] == 1:
+            if json_response["error"]["code"] == ERROR_CODES["AUTHENTICATION_FAILED"]:
                 raise TorrentClientAuthenticationError(f"Deluge method {method} returned an authentication error: {json_response['error']['message']}")
             raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']}")
 
