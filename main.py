@@ -27,8 +27,8 @@ def __verify_api_keys(config):
 def cli_entrypoint(args):
     try:
         config = Config().load(args.config_file)
-        red_api, ops_api = __verify_api_keys(config)
         port = config.get("webserver_port", os.environ.get("PORT", 9713))
+        red_api, ops_api = __verify_api_keys(config)
 
         if args.server:
             run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=port)
