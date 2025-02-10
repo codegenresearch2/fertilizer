@@ -174,7 +174,8 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
     # Test for returning appropriately if torrent already exists
     def test_returns_appropriately_if_torrent_already_exists(self, red_api, ops_api):
         filepath = "/tmp/OPS/foo [OPS].torrent"
-        copy_and_mkdir(filepath, "/tmp/OPS/")  # Added destination path
+        if not os.path.exists(filepath):
+            copy_and_mkdir(filepath, "/tmp/OPS/")  # Create the file if it doesn't exist
 
         with requests_mock.Mocker() as m:
             m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
