@@ -2,7 +2,7 @@ import os
 import copy
 import bencoder
 from hashlib import sha1
-from typing import Union, List
+from typing import Union, List, Optional
 
 from .trackers import RedTracker, OpsTracker
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
@@ -32,7 +32,7 @@ def get_name(torrent_data: dict) -> bytes | None:
         return None
 
 
-def get_announce_url(torrent_data: dict) -> List[bytes]:
+def get_announce_url(torrent_data: dict) -> Optional[List[bytes]]:
     from_announce = torrent_data.get(b"announce")
     if from_announce:
         return from_announce if isinstance(from_announce, list) else [from_announce]
@@ -41,10 +41,10 @@ def get_announce_url(torrent_data: dict) -> List[bytes]:
     if from_trackers:
         return flatten(from_trackers)
 
-    return []
+    return None
 
 
-def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
+def get_origin_tracker(torrent_data: dict) -> Optional[Union[RedTracker, OpsTracker]]:
     source = get_source(torrent_data) or b""
     announce_url = get_announce_url(torrent_data) or []
 
@@ -69,7 +69,7 @@ def recalculate_hash_for_new_source(torrent_data: dict, new_source: Union[bytes,
     return calculate_infohash(torrent_data)
 
 
-def get_bencoded_data(filename: str) -> dict | None:
+def get_bencoded_data(filename: str) -> Optional[dict]:
     try:
         with open(filename, "rb") as f:
             data = bencoder.decode(f.read())
