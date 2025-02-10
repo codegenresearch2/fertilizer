@@ -1,5 +1,4 @@
 import os
-
 from .api import RedAPI, OpsAPI
 from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
 from .progress import Progress
@@ -36,27 +35,45 @@ def scan_torrent_file(
   Raises:
     See `generate_new_torrent_from_file`.
   """
-  source_torrent_path = assert_path_exists(source_torrent_path)
+  try:
+    source_torrent_path = assert_path_exists(source_torrent_path)
+  except FileNotFoundError as e:
+    raise FileNotFoundError(f"Input directory not found: {e}")
+
   output_directory = mkdir_p(output_directory)
 
   output_torrents = list_files_of_extension(output_directory, ".torrent")
   output_infohashes = __collect_infohashes_from_files(output_torrents)
 
-  new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
-    source_torrent_path,
-    output_directory,
-    red_api,
-    ops_api,
-    input_infohashes={},
-    output_infohashes=output_infohashes,
-  )
+  try:
+    new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
+      source_torrent_path,
+      output_directory,
+      red_api,
+      ops_api,
+      input_infohashes={},
+      output_infohashes=output_infohashes,
+    )
+  except TorrentDecodingError as e:
+    raise TorrentDecodingError(f"Error decoding torrent file: {e}")
+  except UnknownTrackerError as e:
+    raise UnknownTrackerError(f"Unknown tracker error: {e}")
+  except TorrentNotFoundError as e:
+    raise TorrentNotFoundError(f"Torrent not found: {e}")
+  except TorrentAlreadyExistsError as e:
+    raise TorrentAlreadyExistsError(f"Torrent already exists: {e}")
+  except Exception as e:
+    raise Exception(f"An unknown error occurred: {e}")
 
   if injector:
-    injector.inject_torrent(
-      source_torrent_path,
-      new_torrent_filepath,
-      new_tracker.site_shortname(),
-    )
+    try:
+      injector.inject_torrent(
+        source_torrent_path,
+        new_torrent_filepath,
+        new_tracker.site_shortname(),
+      )
+    except Exception as e:
+      raise Exception(f"Injection error: {e}")
 
   return new_torrent_filepath
 
@@ -82,8 +99,11 @@ def scan_torrent_directory(
   Raises:
     `FileNotFoundError`: if the input directory does not exist.
   """
+  try:
+    input_directory = assert_path_exists(input_directory)
+  except FileNotFoundError as e:
+    raise FileNotFoundError(f"Input directory not found: {e}")
 
-  input_directory = assert_path_exists(input_directory)
   output_directory = mkdir_p(output_directory)
 
   input_torrents = list_files_of_extension(input_directory, ".torrent")
@@ -108,17 +128,17 @@ def scan_torrent_directory(
       )
 
       if injector:
-        injector.inject_torrent(
-          source_torrent_path,
-          new_torrent_filepath,
-          new_tracker.site_shortname(),
-        )
+        try:
+          injector.inject_torrent(
+            source_torrent_path,
+            new_torrent_filepath,
+            new_tracker.site_shortname(),
+          )
+        except Exception as e:
+          raise Exception(f"Injection error: {e}")
 
       if was_previously_generated:
-        if injector:
-          p.already_exists.print("Torrent was previously generated but was injected into your torrent client.")
-        else:
-          p.already_exists.print("Torrent was previously generated.")
+        p.already_exists.print("Torrent was previously generated but was injected into your torrent client.")
       else:
         p.generated.print(
           f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
@@ -155,7 +175,7 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
       if torrent_data:
         infohash = calculate_infohash(torrent_data)
         infohash_dict[infohash] = filepath
-    except Exception:
+    except UnicodeDecodeError:
       continue
 
   return infohash_dict
