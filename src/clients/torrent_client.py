@@ -23,7 +23,11 @@ class TorrentClient:
         password = unquote(parsed_url.password) if parsed_url.password else ""
         origin = f"{parsed_url.scheme}://{parsed_url.hostname}:{parsed_url.port}"
 
-        href = url_join(origin, os.path.normpath(base_path) if base_path else parsed_url.path.rstrip('/'))
+        if base_path is not None:
+            href = url_join(origin, os.path.normpath(base_path))
+        else:
+            href = url_join(origin, parsed_url.path.rstrip('/'))
+
         return href, username, password
 
     def _determine_label(self, torrent_info):
