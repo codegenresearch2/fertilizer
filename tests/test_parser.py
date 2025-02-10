@@ -1,9 +1,8 @@
 import os
-import pytest
+import shutil
 
 from .helpers import get_torrent_path, SetupTeardown
 
-from src.errors import TorrentDecodingError
 from src.trackers import RedTracker, OpsTracker
 from src.parser import (
   is_valid_infohash,
@@ -16,7 +15,7 @@ from src.parser import (
   save_bencoded_data,
   calculate_infohash,
 )
-
+from src.errors import TorrentDecodingError, MissingInfoKeyError
 
 class TestIsValidInfohash(SetupTeardown):
   def test_returns_true_for_valid_infohash(self):
@@ -28,7 +27,6 @@ class TestIsValidInfohash(SetupTeardown):
     assert not is_valid_infohash("Ubeec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
     assert not is_valid_infohash(123)
 
-
 class TestGetSource(SetupTeardown):
   def test_returns_source_if_present(self):
     assert get_source({b"info": {b"source": b"FOO"}}) == b"FOO"
@@ -36,14 +34,12 @@ class TestGetSource(SetupTeardown):
   def test_returns_none_if_absent(self):
     assert get_source({}) is None
 
-
 class TestGetName(SetupTeardown):
   def test_returns_name_if_present(self):
     assert get_name({b"info": {b"name": b"foo"}}) == b"foo"
 
   def test_returns_none_if_absent(self):
     assert get_name({}) is None
-
 
 class TestGetAnnounceUrl(SetupTeardown):
   def test_returns_url_if_present_in_announce(self):
@@ -57,7 +53,6 @@ class TestGetAnnounceUrl(SetupTeardown):
 
   def test_returns_none_if_absent(self):
     assert get_announce_url({}) is None
-
 
 class TestGetOriginTracker(SetupTeardown):
   def test_returns_red_based_on_source(self):
@@ -84,7 +79,6 @@ class TestGetOriginTracker(SetupTeardown):
     assert get_origin_tracker({b"info": {b"source": b"FOO"}}) is None
     assert get_origin_tracker({b"announce": b"https://foo/123abc"}) is None
 
-
 class TestCalculateInfohash(SetupTeardown):
   def test_returns_infohash(self):
     torrent_data = {b"info": {b"source": b"RED"}}
@@ -92,14 +86,10 @@ class TestCalculateInfohash(SetupTeardown):
 
     assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
 
-  def test_raises_if_no_info_key(self):
-    torrent_data = {}
-
-    with pytest.raises(TorrentDecodingError) as excinfo:
+  def test_raises_error_if_no_info_key(self):
+    torrent_data = {b"source": b"RED"}
+    with self.assertRaises(MissingInfoKeyError):
       calculate_infohash(torrent_data)
-
-    assert "Torrent data does not contain 'info' key" in str(excinfo.value)
-
 
 class TestRecalculateHashForNewSource(SetupTeardown):
   def test_replaces_source_and_returns_hash(self):
@@ -118,7 +108,6 @@ class TestRecalculateHashForNewSource(SetupTeardown):
 
     assert torrent_data == {b"info": {b"source": b"RED"}}
 
-
 class TestGetTorrentData(SetupTeardown):
   def test_returns_torrent_data(self):
     result = get_bencoded_data(get_torrent_path("no_source"))
@@ -131,6 +120,9 @@ class TestGetTorrentData(SetupTeardown):
 
     assert result is None
 
+  def test_raises_error_if_no_info_key(self):
+    with self.assertRaises(MissingInfoKeyError):
+      get_bencoded_data(get_torrent_path("no_info"))
 
 class TestSaveTorrentData(SetupTeardown):
   def test_saves_torrent_data(self):
@@ -165,3 +157,22 @@ class TestSaveTorrentData(SetupTeardown):
     assert os.path.exists("/tmp/output/foo")
 
     os.remove(filename)
+
+  def test_copies_file_and_creates_directory(self):
+    source_file = get_torrent_path("no_source")
+    destination_file = "/tmp/output/foo/test_copy_and_mkdir.torrent"
+
+    save_bencoded_data(destination_file, get_bencoded_data(source_file))
+
+    assert os.path.exists(destination_file)
+    assert os.path.exists("/tmp/output/foo")
+
+    os.remove(destination_file)
+    os.rmdir("/tmp/output/foo")
+
+  def test_raises_error_if_no_info_key(self):
+    torrent_data = {b"source": b"RED"}
+    filename = "/tmp/test_save_bencoded_data.torrent"
+
+    with self.assertRaises(MissingInfoKeyError):
+      save_bencoded_data(filename, torrent_data)
