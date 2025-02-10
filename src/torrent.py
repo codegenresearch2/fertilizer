@@ -57,7 +57,7 @@ def generate_new_torrent_from_file(
 
     api_response = new_tracker_api.find_torrent(new_hash)
 
-    if api_response and api_response["status"] == "success":
+    if api_response and api_response.get("status") == "success":
       new_torrent_filepath = __generate_torrent_output_filepath(
         api_response,
         new_source.decode("utf-8"),
@@ -73,7 +73,7 @@ def generate_new_torrent_from_file(
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
 
         return (new_tracker, save_bencoded_data(new_torrent_filepath, new_torrent_data))
-    elif api_response and api_response["error"] in ("bad hash parameter", "bad parameters"):
+    elif api_response and api_response.get("error") in ("bad hash parameter", "bad parameters"):
       raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
     else:
       raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
