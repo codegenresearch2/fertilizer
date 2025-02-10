@@ -59,7 +59,7 @@ class TestSetup(SetupTeardown):
             assert response
             assert deluge_client._deluge_cookie is not None
 
-    def test_handles_auth_errors_gracefully(self, api_url, deluge_client):
+    def test_raises_exception_on_failed_auth(self, api_url, deluge_client):
         with requests_mock.Mocker() as m:
             m.post(api_url, additional_matcher=auth_matcher, json={"result": False})
 
