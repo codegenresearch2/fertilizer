@@ -13,6 +13,7 @@ from src.parser import (
   recalculate_hash_for_new_source,
   save_bencoded_data,
   calculate_infohash,
+  TorrentDecodingError,
 )
 
 
@@ -89,6 +90,11 @@ class TestCalculateInfohash(SetupTeardown):
     result = calculate_infohash(torrent_data)
 
     assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
+
+  def test_raises_error_if_info_key_missing(self):
+    torrent_data = {}
+    with self.assertRaises(TorrentDecodingError):
+      calculate_infohash(torrent_data)
 
 
 class TestRecalculateHashForNewSource(SetupTeardown):
