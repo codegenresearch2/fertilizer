@@ -19,13 +19,13 @@ from src.parser import (
 
 class TestIsValidInfohash(SetupTeardown):
   def test_returns_true_for_valid_infohash(self):
-    assert is_valid_infohash("0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33") is True
+    assert is_valid_infohash("0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
 
   def test_returns_false_for_invalid_infohash(self):
-    assert is_valid_infohash("abc") is False
-    assert is_valid_infohash("mnopqrstuvwx") is False
-    assert is_valid_infohash("Ubeec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33") is False
-    assert is_valid_infohash(123) is False
+    assert not is_valid_infohash("abc")
+    assert not is_valid_infohash("mnopqrstuvwx")
+    assert not is_valid_infohash("Ubeec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
+    assert not is_valid_infohash(123)
 
 class TestGetSource(SetupTeardown):
   def test_returns_source_if_present(self):
@@ -82,11 +82,11 @@ class TestCalculateInfohash(SetupTeardown):
     result = calculate_infohash(torrent_data)
     assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
 
-  def test_raises_error_for_missing_info_key(self):
+  def test_raises_if_no_info_key(self):
     torrent_data = {}
-    with pytest.raises(TorrentDecodingError) as e:
+    with pytest.raises(TorrentDecodingError) as excinfo:
       calculate_infohash(torrent_data)
-    assert "Torrent data does not contain 'info' key" in str(e.value)
+    assert "Torrent data does not contain 'info' key" in str(excinfo.value)
 
 class TestRecalculateHashForNewSource(SetupTeardown):
   def test_replaces_source_and_returns_hash(self):
