@@ -1,7 +1,16 @@
-import os
+def flatten(arg):
+  if not isinstance(arg, list):
+    return [arg]
+  result = []
+  for item in arg:
+    if isinstance(item, list):
+      result.extend(flatten(item))
+    else:
+      result.append(item)
+  return result
 
 def url_join(*args):
-  parts = [str(arg).strip("/") for arg in args]
+  parts = [str(arg).strip("/") for arg in args if str(arg).strip("/")]
   return "/".join(parts)
 
 class TestUrlJoin:
