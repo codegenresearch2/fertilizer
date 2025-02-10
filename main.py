@@ -28,7 +28,7 @@ def __verify_api_keys(config):
     ops_api = OpsAPI(config.ops_key)
 
     # Perform a lookup with the API to verify the keys and cache the announce URL for future use
-    # This step is crucial as it ensures the API keys are valid and the announce URL is available for later use
+    # This step is essential as it ensures the API keys are valid and the announce URL is available for later use
     red_api.announce_url
     ops_api.announce_url
 
