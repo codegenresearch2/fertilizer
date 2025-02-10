@@ -80,7 +80,7 @@ def scan_torrent_file(
                 new_torrent_filepath,
                 new_tracker.site_shortname(),
             )
-            print(f"Torrent was previously generated and injected into your torrent client.")
+            print("Torrent was previously generated and injected into your torrent client.")
         except Exception as e:
             raise Exception(str(e))
 
@@ -151,7 +151,7 @@ def scan_torrent_directory(
                         new_tracker.site_shortname(),
                     )
                     p.already_exists.print(
-                        f"Torrent was previously generated and injected into your torrent client."
+                        "Torrent was previously generated and injected into your torrent client."
                     )
                 except Exception as e:
                     raise Exception(str(e))
