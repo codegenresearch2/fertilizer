@@ -8,7 +8,7 @@ from src.scanner import scan_torrent_directory, scan_torrent_file
 from src.webserver import run_webserver
 
 
-def verify_api_keys(config):
+def __verify_api_keys(config):
     """
     Verifies the API keys by initializing the RedAPI and OpsAPI instances.
     Performs any necessary checks or lookups.
@@ -27,10 +27,10 @@ def verify_api_keys(config):
 def cli_entrypoint(args):
     try:
         config = Config().load(args.config_file)
-        red_api, ops_api = verify_api_keys(config)
+        red_api, ops_api = __verify_api_keys(config)
 
         if args.server:
-            run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=config.server_port)
+            run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
         elif args.input_file:
             print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
         elif args.input_directory:
