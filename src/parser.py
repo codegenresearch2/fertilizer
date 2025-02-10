@@ -4,9 +4,7 @@ import bencoder
 from hashlib import sha1
 from typing import Union
 
-from .utils import flatten
 from .trackers import RedTracker, OpsTracker
-from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
 
 
 def is_valid_infohash(infohash: str) -> bool:
@@ -39,7 +37,7 @@ def get_announce_url(torrent_data: dict) -> list[bytes] | None:
 
     from_trackers = torrent_data.get(b"trackers")
     if from_trackers:
-        return flatten(from_trackers)
+        return from_trackers[0] if isinstance(from_trackers[0], list) else [from_trackers[0]]
 
     return None
 
@@ -69,7 +67,7 @@ def recalculate_hash_for_new_source(torrent_data: dict, new_source: Union[bytes,
     return calculate_infohash(torrent_data)
 
 
-def get_bencoded_data(filename: str) -> dict:
+def get_bencoded_data(filename: str) -> dict | None:
     try:
         with open(filename, "rb") as f:
             data = bencoder.decode(f.read())
