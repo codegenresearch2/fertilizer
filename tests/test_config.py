@@ -12,6 +12,7 @@ class TestConfig(SetupTeardown):
 
         assert config.red_key == "secret_red"
         assert config.ops_key == "secret_ops"
+        assert config.server_port == "9713"
 
     def test_raises_error_on_missing_config_file(self):
         with pytest.raises(FileNotFoundError) as excinfo:
@@ -19,7 +20,7 @@ class TestConfig(SetupTeardown):
 
         assert "tests/support/missing.json does not exist" in str(excinfo.value)
 
-    def test_raises_error_on_missing_key(self):
+    def test_raises_error_on_missing_key_without_default(self):
         with open("/tmp/empty.json", "w") as f:
             f.write("{}")
 
