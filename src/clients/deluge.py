@@ -70,8 +70,8 @@ class Deluge(TorrentClient):
         params = self.__prepare_inject_torrent_params(new_torrent_filepath, source_torrent_info, save_path_override)
 
         new_torrent_infohash = self.__wrap_request("core.add_torrent_file", params)
-        newtorrent_label = self.__determine_label(source_torrent_info)
-        self.__set_label(new_torrent_infohash, newtorrent_label)
+        new_torrent_label = self.__determine_label(source_torrent_info)
+        self.__set_label(new_torrent_infohash, new_torrent_label)
 
         return new_torrent_infohash
 
@@ -81,7 +81,7 @@ class Deluge(TorrentClient):
             raise TorrentClientAuthenticationError("Password not defined in the Deluge RPC URL. Please format the URL as http://:<PASSWORD>@localhost:8112")
 
         auth_response = self.__request("auth.login", [password])
-        if not auth_response:
+        if "result" in auth_response and not auth_response["result"]:
             raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
 
         return self.__request("web.connected")
@@ -138,12 +138,7 @@ class Deluge(TorrentClient):
 
         self.__handle_response_headers(response.headers)
 
-        if "error" in json_response and json_response["error"]:
-            if json_response["error"]["code"] == self.ERROR_CODES["NO_AUTH"]:
-                raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
-            raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']}")
-
-        return json_response["result"]
+        return json_response
 
     def __handle_response_headers(self, headers):
         if "Set-Cookie" in headers:
@@ -157,8 +152,9 @@ class Deluge(TorrentClient):
             return self.__request(method, params)
 
     def __prepare_inject_torrent_params(self, new_torrent_filepath, source_torrent_info, save_path_override):
+        FILE_EXTENSION = ".fertilizer.torrent"
         return [
-            f"{Path(new_torrent_filepath).stem}.fertilizer.torrent",
+            f"{Path(new_torrent_filepath).stem}{FILE_EXTENSION}",
             base64.b64encode(open(new_torrent_filepath, "rb").read()).decode(),
             {
                 "download_location": save_path_override if save_path_override else source_torrent_info["save_path"],
