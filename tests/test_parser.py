@@ -19,13 +19,13 @@ from src.parser import (
 
 class TestIsValidInfohash(SetupTeardown):
   def test_returns_true_for_valid_infohash(self):
-    assert is_valid_infohash("0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
+    assert is_valid_infohash("0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33") is True
 
   def test_returns_false_for_invalid_infohash(self):
-    assert not is_valid_infohash("abc")
-    assert not is_valid_infohash("mnopqrstuvwx")
-    assert not is_valid_infohash("Ubeec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
-    assert not is_valid_infohash(123)
+    assert is_valid_infohash("abc") is False
+    assert is_valid_infohash("mnopqrstuvwx") is False
+    assert is_valid_infohash("Ubeec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33") is False
+    assert is_valid_infohash(123) is False
 
 class TestGetSource(SetupTeardown):
   def test_returns_source_if_present(self):
@@ -46,10 +46,7 @@ class TestGetAnnounceUrl(SetupTeardown):
     assert get_announce_url({b"announce": b"https://foo.bar"}) == [b"https://foo.bar"]
 
   def test_returns_url_if_present_in_trackers(self):
-    assert get_announce_url({b"trackers": [[b"https://foo.bar"], b"https://baz.qux"]}) == [
-      b"https://foo.bar",
-      b"https://baz.qux",
-    ]
+    assert get_announce_url({b"trackers": [[b"https://foo.bar"], b"https://baz.qux"]}) == [b"https://foo.bar", b"https://baz.qux"]
 
   def test_returns_none_if_absent(self):
     assert get_announce_url({}) is None
