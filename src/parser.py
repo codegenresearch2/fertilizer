@@ -67,8 +67,7 @@ def get_bencoded_data(filename: str) -> dict:
     with open(filename, 'rb') as f:
       data = bencoder.decode(f.read())
     return data
-  except Exception as e:
-    print(f"Error decoding torrent file: {e}")
+  except Exception:
     return None
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
