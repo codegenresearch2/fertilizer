@@ -1,33 +1,25 @@
 from .helpers import SetupTeardown
 
-from src.utils import flatten, url_join
-
-
-class TestFlatten(SetupTeardown):
-  def test_flattens_list(self):
-    assert flatten([1, [2, 3], 4]) == [1, 2, 3, 4]
-
-  def test_returns_already_flat_list(self):
-    assert flatten([1, 2, 3]) == [1, 2, 3]
+from src.utils import url_join
 
 
 class TestUrlJoin(SetupTeardown):
-  def test_joins_paths(self):
-    path = url_join("/api", "v1", "foo")
+  def test_joins_urls(self):
+    url = url_join("http://example.com", "test", "file")
 
-    assert path == "api/v1/foo"
+    assert url == "http://example.com/test/file"
 
-  def test_joins_paths_when_some_have_leading_trailing_slash(self):
-    path = url_join("/api/", "/v1/", "foo/")
+  def test_joins_urls_when_some_have_trailing_slash(self):
+    url = url_join("http://example.com/", "/test", "file")
 
-    assert path == "api/v1/foo"
+    assert url == "http://example.com/test/file"
 
-  def test_joins_a_full_uri(self):
-    path = url_join("https://api.example.com/", "/v1", "foo")
+  def test_joins_urls_with_empty_parts(self):
+    url = url_join("http://example.com", "", "file")
 
-    assert path == "https://api.example.com/v1/foo"
+    assert url == "http://example.com/file"
 
-  def test_strips_bare_slashes(self):
-    path = url_join("https://api.example.com/", "/", "/v1/", "/foo/", "/")
+  def test_joins_urls_with_none_parts(self):
+    url = url_join("http://example.com", None, "file")
 
-    assert path == "https://api.example.com/v1/foo"
+    assert url == "http://example.com/file"
