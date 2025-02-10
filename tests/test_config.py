@@ -24,7 +24,7 @@ class TestConfig(SetupTeardown):
             Config().load("tests/support/missing.json")
         assert "tests/support/missing.json does not exist" in str(excinfo.value)
 
-    def test_raises_error_on_missing_key_without_default(self):
+    def test_raises_error_on_missing_key(self):
         with open("/tmp/empty.json", "w") as f:
             f.write("{}")
         config = Config().load("/tmp/empty.json")
@@ -39,11 +39,3 @@ class TestConfig(SetupTeardown):
         config = Config().load("/tmp/empty.json")
         assert config.server_port == "9713"
         os.remove("/tmp/empty.json")
-
-    def setup(self):
-        # Additional setup logic if needed
-        pass
-
-    def teardown(self):
-        # Additional teardown logic if needed
-        pass
