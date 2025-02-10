@@ -17,22 +17,22 @@ def is_valid_infohash(infohash: str) -> bool:
 
 def get_source(torrent_data: dict) -> bytes | None:
   try:
-    return torrent_data[b'info'][b'source']
+    return torrent_data["info"]["source"]
   except KeyError:
     return None
 
 def get_name(torrent_data: dict) -> bytes | None:
   try:
-    return torrent_data[b'info'][b'name']
+    return torrent_data["info"]["name"]
   except KeyError:
     return None
 
 def get_announce_url(torrent_data: dict) -> list[bytes] | None:
-  from_announce = torrent_data.get(b'announce')
+  from_announce = torrent_data.get("announce")
   if from_announce:
     return from_announce if isinstance(from_announce, list) else [from_announce]
 
-  from_trackers = torrent_data.get(b'trackers')
+  from_trackers = torrent_data.get("trackers")
   if from_trackers:
     return flatten(from_trackers)
 
@@ -52,12 +52,12 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
 
 def calculate_infohash(torrent_data: dict) -> str:
   if 'info' not in torrent_data:
-    raise TorrentDecodingError('Torrent data does not contain \'info\' key')
-  return sha1(bencoder.encode(torrent_data[b'info'])).hexdigest().upper()
+    raise TorrentDecodingError("Torrent data does not contain 'info' key")
+  return sha1(bencoder.encode(torrent_data["info"])).hexdigest().upper()
 
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
   torrent_data = copy.deepcopy(torrent_data)
-  torrent_data[b'info'][b'source'] = new_source
+  torrent_data["info"]["source"] = new_source
 
   return calculate_infohash(torrent_data)
 
@@ -66,8 +66,7 @@ def get_bencoded_data(filename: str) -> dict:
     with open(filename, 'rb') as f:
       data = bencoder.decode(f.read())
     return data
-  except Exception as e:
-    print(f'Error decoding torrent file: {e}')
+  except Exception:
     return None
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
