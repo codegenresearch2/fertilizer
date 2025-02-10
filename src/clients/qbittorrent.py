@@ -3,10 +3,11 @@ import requests
 from pathlib import Path
 from requests.structures import CaseInsensitiveDict
 
-from ..utils import url_join
+from ..filesystem import sane_join
 from ..parser import get_bencoded_data, calculate_infohash
 from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from .torrent_client import TorrentClient
+from ..utils import url_join
 
 
 class Qbittorrent(TorrentClient):
