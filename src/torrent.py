@@ -35,7 +35,7 @@ def generate_new_torrent_from_file(
     Returns:
         A tuple containing the new tracker class (`RedTracker` or `OpsTracker`), the path to the new torrent file, and a boolean indicating whether the torrent already existed.
     Raises:
-        `TorrentDecodingError`: if the original torrent file could not be decoded.
+        `TorrentDecodingError`: if the original torrent file could not be decoded or if the "info" section is missing.
         `UnknownTrackerError`: if the original torrent file is not from OPS or RED based on source or announce URL.
         `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.
         `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
@@ -45,6 +45,9 @@ def generate_new_torrent_from_file(
     if not source_torrent_data:
         raise TorrentDecodingError("Error decoding torrent file")
 
+    if b"info" not in source_torrent_data:
+        raise TorrentDecodingError("The torrent file is missing the 'info' section")
+
     source_tracker = get_origin_tracker(source_torrent_data)
     if not source_tracker:
         raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
@@ -52,6 +55,7 @@ def generate_new_torrent_from_file(
     new_torrent_data = copy.deepcopy(source_torrent_data)
     new_tracker = source_tracker.reciprocal_tracker()
     new_tracker_api = __get_reciprocal_tracker_api(new_tracker, red_api, ops_api)
+    stored_api_response = None
     was_previously_generated = False
 
     all_possible_hashes = __calculate_all_possible_hashes(source_torrent_data, new_tracker.source_flags_for_creation())
