@@ -19,9 +19,6 @@ def cli_entrypoint(args):
       print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
     elif args.input_directory:
       print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
-  except KeyError:
-    print(f"{Fore.RED}Missing configuration key. Please check your config file.{Fore.RESET}")
-    exit(1)
   except Exception as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
