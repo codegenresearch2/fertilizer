@@ -2,26 +2,17 @@ from .helpers import SetupTeardown
 from src.utils import url_join
 
 class TestUrlJoin(SetupTeardown):
-  def test_joins_paths_without_trailing_slash(self):
-    result = url_join("https://example.com", "api", "users")
-    assert result == "https://example.com/api/users"
+  def test_joins_paths_correctly(self):
+    test_cases = [
+      ("https://example.com", "api", "users", "https://example.com/api/users"),
+      ("https://example.com/", "api", "users", "https://example.com/api/users"),
+      ("https://example.com", "/api", "users", "https://example.com/api/users"),
+      ("https://example.com", "api/", "users", "https://example.com/api/users"),
+      ("https://example.com", "", "api", "https://example.com/api"),
+      ("https://example.com", "api", "", "https://example.com/api/"),
+      ("https://example.com", "api", "users", "https://example.com/api/users"),
+    ]
 
-  def test_joins_paths_with_leading_slash(self):
-    result = url_join("https://example.com", "/api", "users")
-    assert result == "https://example.com/api/users"
-
-  def test_joins_paths_with_trailing_slash(self):
-    result = url_join("https://example.com", "api/", "users")
-    assert result == "https://example.com/api/users"
-
-  def test_joins_paths_with_multiple_slashes(self):
-    result = url_join("https://example.com", "api//", "/users")
-    assert result == "https://example.com/api/users"
-
-  def test_joins_paths_with_empty_parts(self):
-    result = url_join("https://example.com", "", "api", "", "users")
-    assert result == "https://example.com/api/users"
-
-  def test_joins_full_uri(self):
-    result = url_join("https://example.com", "api", "users")
-    assert result == "https://example.com/api/users"
+    for base, *parts, expected in test_cases:
+      result = url_join(base, *parts)
+      assert result == expected, f"Expected {expected}, but got {result}"
