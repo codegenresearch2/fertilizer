@@ -76,6 +76,8 @@ def generate_new_torrent_from_file(
     return (new_tracker, output_infohashes[found_output_hash], True)
 
   for new_source in new_tracker.source_flags_for_creation():
+    if isinstance(new_source, str):
+      new_source = new_source.encode()
     new_hash = recalculate_hash_for_new_source(torrent_data, new_source)
     stored_api_response = new_tracker_api.find_torrent(new_hash)
 
@@ -83,7 +85,7 @@ def generate_new_torrent_from_file(
       new_torrent_filepath = __generate_torrent_output_filepath(
         stored_api_response,
         new_tracker,
-        new_source,
+        new_source.decode(),
         output_directory,
       )
 
@@ -92,7 +94,7 @@ def generate_new_torrent_from_file(
 
       if new_torrent_filepath:
         torrent_id = __get_torrent_id(stored_api_response)
-        new_torrent_data[b"info"][b"source"] = new_source.encode()
+        new_torrent_data[b"info"][b"source"] = new_source
         new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
         save_bencoded_data(new_torrent_filepath, new_torrent_data)
