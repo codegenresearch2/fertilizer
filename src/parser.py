@@ -2,9 +2,11 @@ import os
 import copy
 import bencoder
 from hashlib import sha1
-from typing import Union
+from typing import Union, List
 
 from .trackers import RedTracker, OpsTracker
+from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
+from .utils import flatten
 
 
 def is_valid_infohash(infohash: str) -> bool:
@@ -30,16 +32,16 @@ def get_name(torrent_data: dict) -> bytes | None:
         return None
 
 
-def get_announce_url(torrent_data: dict) -> list[bytes] | None:
+def get_announce_url(torrent_data: dict) -> List[bytes]:
     from_announce = torrent_data.get(b"announce")
     if from_announce:
         return from_announce if isinstance(from_announce, list) else [from_announce]
 
     from_trackers = torrent_data.get(b"trackers")
     if from_trackers:
-        return from_trackers[0] if isinstance(from_trackers[0], list) else [from_trackers[0]]
+        return flatten(from_trackers)
 
-    return None
+    return []
 
 
 def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
