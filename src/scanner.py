@@ -121,7 +121,7 @@ def scan_torrent_directory(
     print(f"({i}/{p.total}) {basename}")
 
     try:
-      new_tracker, new_torrent_filepath, was_previously_generated = generate_new_torrent_from_file(
+      new_torrent_filepath = generate_new_torrent_from_file(
         source_torrent_path,
         output_directory,
         red_api,
@@ -140,12 +140,7 @@ def scan_torrent_directory(
         except TorrentExistsInClientError as e:
           raise TorrentExistsInClientError(str(e))
 
-      if was_previously_generated:
-        p.already_exists.print("Torrent was previously generated.")
-      else:
-        p.generated.print(
-          f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
-        )
+      p.generated.print(f"Generated new torrent file: {new_torrent_filepath}")
     except TorrentDecodingError as e:
       p.error.print(str(e))
       continue
