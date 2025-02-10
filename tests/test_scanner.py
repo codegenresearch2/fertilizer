@@ -9,7 +9,7 @@ from colorama import Fore
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
-from src.errors import TorrentExistsInClientError
+from src.errors import TorrentExistsInClientError, TorrentDecodingError
 from src.scanner import scan_torrent_directory, scan_torrent_file
 
 class TestScanTorrentFile(SetupTeardown):
@@ -83,6 +83,12 @@ class TestScanTorrentFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api, None)
+
+  def test_raise_error_if_torrent_has_no_info(self, red_api, ops_api):
+    copy_and_mkdir(get_torrent_path("no_info"), "/tmp/input/no_info.torrent")
+
+    with pytest.raises(TorrentDecodingError):
+      scan_torrent_file("/tmp/input/no_info.torrent", "/tmp/output", red_api, ops_api, None)
 
 class TestScanTorrentDirectory(SetupTeardown):
   def test_input_directory_not_found(self, red_api, ops_api):
@@ -271,7 +277,4 @@ class TestScanTorrentDirectory(SetupTeardown):
     copy_and_mkdir(get_torrent_path("broken_name"), "/tmp/input/broken_name.torrent")
 
     with requests_mock.Mocker() as m:
-      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
-      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
-
-      scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None)
+      m.get(re.compile("action=tor
