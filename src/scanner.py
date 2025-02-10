@@ -51,7 +51,7 @@ def scan_torrent_file(
     output_infohashes = __collect_infohashes_from_files(output_torrents)
 
     try:
-        new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
+        new_tracker, new_torrent_filepath, was_previously_generated = generate_new_torrent_from_file(
             source_torrent_path,
             output_directory,
             red_api,
@@ -70,7 +70,7 @@ def scan_torrent_file(
     except Exception as e:
         raise Exception(f"An unknown error occurred: {e}")
 
-    if injector:
+    if injector and not was_previously_generated:
         try:
             injector.inject_torrent(
                 source_torrent_path,
@@ -177,7 +177,7 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
             if torrent_data and 'info' in torrent_data:
                 infohash = calculate_infohash(torrent_data)
                 infohash_dict[infohash] = filepath
-        except UnicodeDecodeError:
+        except Exception:
             continue
 
     return infohash_dict
