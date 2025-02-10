@@ -58,7 +58,7 @@ def generate_new_torrent_from_file(
     stored_api_response = new_tracker_api.find_torrent(new_hash)
 
     if stored_api_response["status"] == "success":
-      new_torrent_filepath = generate_torrent_output_filepath(
+      new_torrent_filepath = __generate_torrent_output_filepath(
         stored_api_response,
         new_source.decode("utf-8"),
         output_directory,
@@ -79,7 +79,7 @@ def generate_new_torrent_from_file(
       raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
 
 
-def generate_torrent_output_filepath(api_response: dict, new_source: str, output_directory: str, new_tracker: RedTracker | OpsTracker) -> str:
+def __generate_torrent_output_filepath(api_response: dict, new_source: str, output_directory: str, new_tracker: RedTracker | OpsTracker) -> str:
   """
   Generates the output filepath for the new torrent file. Does not create the file.
 
