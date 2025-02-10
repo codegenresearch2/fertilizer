@@ -22,10 +22,6 @@ class Config:
     return self
 
   @property
-  def server_port(self) -> str:
-    return self._json.get("server_port", "9713")
-
-  @property
   def red_key(self) -> str:
     return self.__get_key("red_key")
 
@@ -33,8 +29,14 @@ class Config:
   def ops_key(self) -> str:
     return self.__get_key("ops_key")
 
-  def __get_key(self, key):
+  @property
+  def server_port(self) -> str:
+    return self._json.get("server_port", "9713")
+
+  def __get_key(self, key, default=None):
     try:
       return self._json[key]
     except KeyError:
+      if default is not None:
+        return default
       raise ConfigKeyError(f"Key '{key}' not found in config file.")
