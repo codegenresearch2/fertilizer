@@ -2,9 +2,6 @@ import sys
 from time import sleep
 from colorama import Fore
 
-class AuthenticationError(Exception):
-  pass
-
 class RequestError(Exception):
   pass
 
@@ -32,6 +29,9 @@ class TorrentClientError(Exception):
 class TorrentInjectionError(Exception):
   pass
 
+class TorrentClientAuthenticationError(Exception):
+  pass
+
 def handle_error(
   description: str,
   exception_details: (str | None) = None,
@@ -39,7 +39,7 @@ def handle_error(
   extra_description: str = "",
   should_exit: bool = False,
 ) -> None:
-  action = "Exiting" if should_exit: "Retrying"
+  action = "Exiting" if should_exit else "Retrying"
   action += f" in {wait_time} seconds..." if wait_time else "..."
   exception_message = f"\n{Fore.LIGHTBLACK_EX}{exception_details}" if exception_details is not None else ""
 
