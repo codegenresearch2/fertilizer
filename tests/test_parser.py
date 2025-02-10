@@ -1,5 +1,5 @@
-import pytest
 import os
+import pytest
 
 from .helpers import get_torrent_path, SetupTeardown
 
