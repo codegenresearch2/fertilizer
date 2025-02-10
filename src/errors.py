@@ -4,10 +4,6 @@ from time import sleep
 from colorama import Fore
 
 
-class CustomError(Exception):
-    pass
-
-
 def handle_error(
   description: str,
   exception_details: (str | None) = None,
