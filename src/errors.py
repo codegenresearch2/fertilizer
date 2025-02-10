@@ -26,33 +26,37 @@ def handle_error(
         sys.exit(1)
 
 
-class AuthenticationError(CustomError):
+class AuthenticationError(Exception):
     pass
 
 
-class TorrentDecodingError(CustomError):
+class TorrentDecodingError(Exception):
     pass
 
 
-class UnknownTrackerError(CustomError):
+class UnknownTrackerError(Exception):
     pass
 
 
-class TorrentNotFoundError(CustomError):
+class TorrentNotFoundError(Exception):
     pass
 
 
-class TorrentAlreadyExistsError(CustomError):
+class TorrentAlreadyExistsError(Exception):
     pass
 
 
-class ConfigKeyError(CustomError):
+class ConfigKeyError(Exception):
     pass
 
 
-class TorrentClientError(CustomError):
+class TorrentClientError(Exception):
     pass
 
 
-class TorrentInjectionError(CustomError):
+class TorrentInjectionError(Exception):
+    pass
+
+
+class TorrentClientAuthenticationError(Exception):
     pass
