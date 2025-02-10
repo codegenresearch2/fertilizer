@@ -68,13 +68,13 @@ def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str
     return calculate_infohash(torrent_data)
 
 
-def get_bencoded_data(filename: str) -> dict | None:
+def get_bencoded_data(filename: str) -> dict:
     try:
         with open(filename, "rb") as f:
             data = bencoder.decode(f.read())
         return data
     except Exception:
-        return None
+        return {}
 
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
