@@ -69,7 +69,7 @@ def recalculate_hash_for_new_source(torrent_data: dict, new_source: Union[bytes,
     return calculate_infohash(torrent_data)
 
 
-def get_bencoded_data(filename: str) -> dict | None:
+def get_bencoded_data(filename: str) -> dict:
     try:
         with open(filename, "rb") as f:
             data = bencoder.decode(f.read())
