@@ -6,9 +6,9 @@ def flatten(arg):
   return [x for sub in arg for x in flatten(sub)]
 
 def url_join(*args):
-  path_parts = [part.lstrip(os.path.sep) for part in args[1:]]
-  path_parts.insert(0, args[0])
-  return os.path.join(*path_parts)
+  path_parts = [part.lstrip(os.path.sep) for part in args]
+  path_parts = [part for part in path_parts if part]  # Remove empty parts
+  return "/".join(path_parts)
 
 class TestFlatten:
   def test_flattens_list(self):
