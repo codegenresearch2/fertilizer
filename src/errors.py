@@ -1,6 +1,5 @@
-import sys
-from time import sleep
-from colorama import Fore
+class AuthenticationError(Exception):
+  pass
 
 class RequestError(Exception):
   pass
@@ -31,6 +30,10 @@ class TorrentInjectionError(Exception):
 
 class TorrentClientAuthenticationError(Exception):
   pass
+
+import sys
+from time import sleep
+from colorama import Fore
 
 def handle_error(
   description: str,
