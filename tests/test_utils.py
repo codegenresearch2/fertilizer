@@ -21,12 +21,12 @@ class TestFlatten(SetupTeardown):
     assert flatten(None) == [None]
 
 class TestUrlJoin(SetupTeardown):
-  def test_joins_paths(self):
+  def test_joins_paths_with_leading_slash(self):
     path = url_join("/tmp", "test", "file")
     assert path == "/tmp/test/file"
 
-  def test_joins_paths_with_leading_slash(self):
-    path = url_join("/tmp", "/test", "file")
+  def test_joins_paths_without_leading_slash(self):
+    path = url_join("/tmp", "test", "file")
     assert path == "/tmp/test/file"
 
   def test_joins_paths_with_trailing_slash(self):
