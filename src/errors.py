@@ -1,35 +1,32 @@
 class AuthenticationError(Exception):
-  pass
+    pass
 
 class RequestError(Exception):
-  pass
+    pass
 
 class MaxRetriesExceededError(Exception):
-  pass
+    pass
 
 class TorrentDecodingError(Exception):
-  pass
+    pass
 
 class UnknownTrackerError(Exception):
-  pass
+    pass
 
 class TorrentNotFoundError(Exception):
-  pass
+    pass
 
 class TorrentAlreadyExistsError(Exception):
-  pass
-
-class ConfigKeyError(Exception):
-  pass
+    pass
 
 class TorrentClientError(Exception):
-  pass
+    pass
 
 class TorrentInjectionError(Exception):
-  pass
+    pass
 
 class TorrentClientAuthenticationError(Exception):
-  pass
+    pass
 
 import sys
 from time import sleep
