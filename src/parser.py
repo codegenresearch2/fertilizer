@@ -42,10 +42,10 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
   source = get_source(torrent_data) or b''
   announce_url = get_announce_url(torrent_data) or []
 
-  if source.decode() in [flag.decode() for flag in RedTracker.source_flags_for_search()] or any(RedTracker.announce_url() in url.decode() for url in announce_url):
+  if source in RedTracker.source_flags_for_search() or any(RedTracker.announce_url() in url for url in announce_url):
     return RedTracker
 
-  if source.decode() in [flag.decode() for flag in OpsTracker.source_flags_for_search()] or any(OpsTracker.announce_url() in url.decode() for url in announce_url):
+  if source in OpsTracker.source_flags_for_search() or any(OpsTracker.announce_url() in url for url in announce_url):
     return OpsTracker
 
   return None
@@ -58,7 +58,7 @@ def calculate_infohash(torrent_data: dict) -> str:
 
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: bytes | str) -> str:
   torrent_data = copy.deepcopy(torrent_data)
-  torrent_data[b'info'][b'source'] = new_source.encode() if isinstance(new_source, str) else new_source
+  torrent_data[b'info'][b'source'] = new_source
 
   return calculate_infohash(torrent_data)
 
