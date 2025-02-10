@@ -175,8 +175,6 @@ class Deluge(TorrentClient):
         except json.JSONDecodeError as json_parse_error:
             raise TorrentClientError(f"Deluge method {method} response was non-JSON") from json_parse_error
 
-        self.__handle_response_headers(response.headers)
-
         if "error" in json_response and json_response["error"]:
             error_code = json_response["error"].get("code")
             if error_code in self.ERROR_CODES:
