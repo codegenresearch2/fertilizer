@@ -43,7 +43,7 @@ def torrent_info_response():
 class TestAuthentication(SetupTeardown):
     def test_raises_exception_on_failed_auth(self, api_url, deluge_client):
         with requests_mock.Mocker() as m:
-            m.post(api_url, additional_matcher=auth_matcher, json={"result": False})
+            m.post(api_url, additional_matcher=auth_matcher, json={"error": {"code": 401, "message": "Unauthorized"}})
 
             with pytest.raises(TorrentClientAuthenticationError) as excinfo:
                 deluge_client.setup()
