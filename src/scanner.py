@@ -40,18 +40,11 @@ def scan_torrent_file(
     TorrentExistsInClientError: if the new torrent file already exists in the torrent client.
     Exception: if an unknown error occurs.
   """
-  try:
-    source_torrent_path = assert_path_exists(source_torrent_path)
-  except FileNotFoundError:
-    raise TorrentNotFoundError(f"File not found: {source_torrent_path}")
-
+  source_torrent_path = assert_path_exists(source_torrent_path)
   output_directory = mkdir_p(output_directory)
 
-  try:
-    output_torrents = list_files_of_extension(output_directory, ".torrent")
-    output_infohashes = __collect_infohashes_from_files(output_torrents)
-  except Exception as e:
-    raise TorrentDecodingError("Error listing files in output directory") from e
+  output_torrents = list_files_of_extension(output_directory, ".torrent")
+  output_infohashes = __collect_infohashes_from_files(output_torrents)
 
   try:
     new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
@@ -63,15 +56,15 @@ def scan_torrent_file(
       output_infohashes=output_infohashes,
     )
   except TorrentDecodingError as e:
-    raise TorrentDecodingError(str(e)) from e
+    raise TorrentDecodingError(str(e))
   except UnknownTrackerError as e:
-    raise UnknownTrackerError(str(e)) from e
+    raise UnknownTrackerError(str(e))
   except TorrentAlreadyExistsError as e:
-    raise TorrentAlreadyExistsError(str(e)) from e
+    raise TorrentAlreadyExistsError(str(e))
   except TorrentNotFoundError as e:
-    raise TorrentNotFoundError(str(e)) from e
+    raise TorrentNotFoundError(str(e))
   except Exception as e:
-    raise Exception(str(e)) from e
+    raise Exception(str(e))
 
   if injector:
     try:
@@ -80,8 +73,8 @@ def scan_torrent_file(
         new_torrent_filepath,
         new_tracker.site_shortname(),
       )
-    except Exception as e:
-      raise TorrentExistsInClientError(str(e)) from e
+    except TorrentExistsInClientError as e:
+      raise TorrentExistsInClientError(str(e))
 
   return new_torrent_filepath
 
@@ -113,20 +106,13 @@ def scan_torrent_directory(
     TorrentNotFoundError: if the torrent file could not be found on the reciprocal tracker.
     Exception: if an unknown error occurs.
   """
-  try:
-    assert_path_exists(input_directory)
-  except FileNotFoundError as e:
-    raise FileNotFoundError(str(e)) from e
-
+  input_directory = assert_path_exists(input_directory)
   output_directory = mkdir_p(output_directory)
 
-  try:
-    input_torrents = list_files_of_extension(input_directory, ".torrent")
-    output_torrents = list_files_of_extension(output_directory, ".torrent")
-    input_infohashes = __collect_infohashes_from_files(input_torrents)
-    output_infohashes = __collect_infohashes_from_files(output_torrents)
-  except Exception as e:
-    raise TorrentDecodingError("Error listing files in directories") from e
+  input_torrents = list_files_of_extension(input_directory, ".torrent")
+  output_torrents = list_files_of_extension(output_directory, ".torrent")
+  input_infohashes = __collect_infohashes_from_files(input_torrents)
+  output_infohashes = __collect_infohashes_from_files(output_torrents)
 
   p = Progress(len(input_torrents))
 
@@ -151,8 +137,8 @@ def scan_torrent_directory(
             new_torrent_filepath,
             new_tracker.site_shortname(),
           )
-        except Exception as e:
-          raise TorrentExistsInClientError(str(e)) from e
+        except TorrentExistsInClientError as e:
+          raise TorrentExistsInClientError(str(e))
 
       if was_previously_generated:
         p.already_exists.print("Torrent was previously generated.")
