@@ -61,7 +61,7 @@ def generate_new_torrent_from_file(
       raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}: {str(e)}")
 
     if stored_api_response["status"] == "success":
-      new_torrent_filepath = generate_torrent_output_filepath(
+      new_torrent_filepath = __generate_torrent_output_filepath(
         stored_api_response,
         new_tracker,
         new_source.decode("utf-8"),
@@ -72,7 +72,7 @@ def generate_new_torrent_from_file(
         torrent_id = __get_torrent_id(stored_api_response)
 
         new_torrent_data[b"info"][b"source"] = new_source  # This is already bytes rather than str
-        new_torrent_data[b"announce"] = new_tracker.announce_url.encode()
+        new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker.site_url, torrent_id).encode()
 
         return (new_tracker, save_bencoded_data(new_torrent_filepath, new_torrent_data))
@@ -81,7 +81,7 @@ def generate_new_torrent_from_file(
       raise Exception(f"An unknown error occurred in the API response: {error_message}")
 
 
-def generate_torrent_output_filepath(api_response: dict, tracker: RedTracker | OpsTracker, new_source: str, output_directory: str) -> str:
+def __generate_torrent_output_filepath(api_response: dict, tracker: RedTracker | OpsTracker, new_source: str, output_directory: str) -> str:
   """
   Generates the output filepath for the new torrent file. Does not create the file.
 
