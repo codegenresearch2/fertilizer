@@ -13,6 +13,7 @@ from src.parser import (
   recalculate_hash_for_new_source,
   save_bencoded_data,
   calculate_infohash,
+  TorrentDecodingError,
 )
 
 
@@ -25,6 +26,10 @@ class TestIsValidInfohash(SetupTeardown):
     assert not is_valid_infohash("mnopqrstuvwx")
     assert not is_valid_infohash("Ubeec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
     assert not is_valid_infohash(123)
+
+  def test_raises_exception_for_missing_info_key(self):
+    with self.assertRaises(TorrentDecodingError):
+      calculate_infohash({})
 
 
 class TestGetSource(SetupTeardown):
@@ -89,6 +94,10 @@ class TestCalculateInfohash(SetupTeardown):
     result = calculate_infohash(torrent_data)
 
     assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
+
+  def test_raises_exception_for_missing_info_key(self):
+    with self.assertRaises(TorrentDecodingError):
+      calculate_infohash({})
 
 
 class TestRecalculateHashForNewSource(SetupTeardown):
