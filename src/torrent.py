@@ -21,6 +21,29 @@ def add_source_flag(self, source_flag):
 
 OpsTracker.add_source_flag = add_source_flag
 
+def __get_bencoded_data_and_tracker(torrent_path):
+    # The fastresume stuff is to support qBittorrent since it doesn't store
+    # announce URLs in the torrent file IFF we're taking the file from `BT_backup`.
+    #
+    # qbit stores that information in a sidecar file that has the exact same name
+    # as the torrent file but with a `.fastresume` extension instead. It's also stored
+    # in a list of lists called `trackers` in this `.fastresume` file instead of `announce`.
+    fastresume_path = replace_extension(torrent_path, ".fastresume")
+    source_torrent_data = get_bencoded_data(torrent_path)
+    fastresume_data = get_bencoded_data(fastresume_path)
+
+    if not source_torrent_data:
+        raise TorrentDecodingError("Error decoding torrent file")
+
+    torrent_tracker = get_origin_tracker(source_torrent_data)
+    fastresume_tracker = get_origin_tracker(fastresume_data) if fastresume_data else None
+    source_tracker = torrent_tracker or fastresume_tracker
+
+    if not source_tracker:
+        raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
+
+    return source_torrent_data, source_tracker
+
 def generate_new_torrent_from_file(
     source_torrent_path: str,
     output_directory: str,
