@@ -26,7 +26,7 @@ def handle_error(
         sys.exit(1)
 
 
-class AuthenticationError(CustomError):
+class AuthenticationError(Exception):
     pass
 
 
@@ -55,4 +55,8 @@ class TorrentClientError(CustomError):
 
 
 class TorrentInjectionError(CustomError):
+    pass
+
+
+class TorrentClientAuthenticationError(AuthenticationError):
     pass
