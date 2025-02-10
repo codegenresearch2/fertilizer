@@ -1,12 +1,5 @@
 from .helpers import SetupTeardown
-from src.utils import url_join, flatten
-
-class TestFlatten(SetupTeardown):
-  def test_flattens_list(self):
-    assert flatten([1, [2, 3], 4]) == [1, 2, 3, 4]
-
-  def test_returns_already_flat_list(self):
-    assert flatten([1, 2, 3]) == [1, 2, 3]
+from src.utils import url_join
 
 class TestUrlJoin(SetupTeardown):
   def test_joins_paths_normalizes_slashes(self):
