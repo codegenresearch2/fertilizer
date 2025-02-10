@@ -4,10 +4,6 @@ from time import sleep
 from colorama import Fore
 
 
-class CustomError(Exception):
-    pass
-
-
 def handle_error(
   description: str,
   exception_details: (str | None) = None,
@@ -30,33 +26,29 @@ class AuthenticationError(Exception):
     pass
 
 
-class TorrentDecodingError(CustomError):
+class TorrentDecodingError(Exception):
     pass
 
 
-class UnknownTrackerError(CustomError):
+class UnknownTrackerError(Exception):
     pass
 
 
-class TorrentNotFoundError(CustomError):
+class TorrentNotFoundError(Exception):
     pass
 
 
-class TorrentAlreadyExistsError(CustomError):
+class TorrentAlreadyExistsError(Exception):
     pass
 
 
-class ConfigKeyError(CustomError):
+class ConfigKeyError(Exception):
     pass
 
 
-class TorrentClientError(CustomError):
+class TorrentClientError(Exception):
     pass
 
 
-class TorrentInjectionError(CustomError):
-    pass
-
-
-class TorrentClientAuthenticationError(AuthenticationError):
+class TorrentInjectionError(Exception):
     pass
