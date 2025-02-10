@@ -35,13 +35,13 @@ def scan_torrent_file(
   Raises:
     TorrentDecodingError: if the original torrent file could not be decoded.
     UnknownTrackerError: if the original torrent file is not from OPS or RED.
-    TorrentNotFoundError: if the original torrent file could not be found on the reciprocal tracker.
+    TorrentNotFoundError: if the original torrent file does not exist.
     TorrentAlreadyExistsError: if the new torrent file already exists in the input or output directory.
     TorrentExistsInClientError: if the new torrent file already exists in the torrent client.
     Exception: if an unknown error occurs.
   """
   try:
-    source_torrent_path = assert_path_exists(source_torrent_path)
+    assert_path_exists(source_torrent_path)
   except FileNotFoundError:
     raise TorrentNotFoundError(f"File not found: {source_torrent_path}")
 
