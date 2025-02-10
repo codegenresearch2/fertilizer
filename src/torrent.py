@@ -43,7 +43,8 @@ def generate_new_torrent_from_file(
     `Exception`: if an unknown error occurs.
   """
   try:
-    source_torrent_data, source_tracker = __get_bencoded_data_and_tracker(source_torrent_path)
+    source_torrent_data = get_bencoded_data(source_torrent_path)
+    source_tracker = get_origin_tracker(source_torrent_data)
   except TorrentDecodingError as e:
     raise TorrentDecodingError(f"Error decoding torrent file: {e}")
   except UnknownTrackerError as e:
@@ -150,24 +151,6 @@ def __get_torrent_id(api_response: dict) -> str:
 
 def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
   return f"{site_url}/torrents.php?torrentid={torrent_id}"
-
-
-def __get_bencoded_data_and_tracker(torrent_path):
-  fastresume_path = replace_extension(torrent_path, ".fastresume")
-  source_torrent_data = get_bencoded_data(torrent_path)
-  fastresume_data = get_bencoded_data(fastresume_path)
-
-  if not source_torrent_data:
-    raise TorrentDecodingError("Error decoding torrent file")
-
-  torrent_tracker = get_origin_tracker(source_torrent_data)
-  fastresume_tracker = get_origin_tracker(fastresume_data) if fastresume_data else None
-  source_tracker = torrent_tracker or fastresume_tracker
-
-  if not source_tracker:
-    raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
-
-  return source_torrent_data, source_tracker
 
 
 def __get_reciprocal_tracker_api(new_tracker, red_api, ops_api):
