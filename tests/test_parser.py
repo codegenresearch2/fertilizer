@@ -9,6 +9,7 @@ from src.parser import (
     get_origin_tracker,
     recalculate_hash_for_new_source,
     save_bencoded_data,
+    calculate_infohash,
     TorrentDecodingError
 )
 from src.trackers import RedTracker, OpsTracker
