@@ -44,13 +44,16 @@ def generate_new_torrent_from_file(
   """
   try:
     torrent_data = get_bencoded_data(source_torrent_path)
-    tracker = get_origin_tracker(torrent_data)
-    if tracker is None:
-      raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
-  except TorrentDecodingError as e:
-    raise TorrentDecodingError(f"Error decoding torrent file: {e}")
-  except UnknownTrackerError as e:
-    raise UnknownTrackerError(f"Error determining torrent tracker: {e}")
+    if torrent_data is None:
+      raise TorrentDecodingError("Error decoding torrent file")
+  except TorrentDecodingError:
+    raise
+  except Exception:
+    raise TorrentDecodingError("Error decoding torrent file")
+
+  tracker = get_origin_tracker(torrent_data)
+  if tracker is None:
+    raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
 
   new_torrent_data = copy.deepcopy(torrent_data)
   new_tracker = tracker.reciprocal_tracker()
@@ -73,16 +76,14 @@ def generate_new_torrent_from_file(
     return (new_tracker, output_infohashes[found_output_hash], True)
 
   for new_source in new_tracker.source_flags_for_creation():
-    if not isinstance(new_source, bytes):
-      new_source = new_source.encode()
-    new_hash = recalculate_hash_for_new_source(torrent_data, new_source.decode())
+    new_hash = recalculate_hash_for_new_source(torrent_data, new_source)
     stored_api_response = new_tracker_api.find_torrent(new_hash)
 
     if stored_api_response["status"] == "success":
       new_torrent_filepath = __generate_torrent_output_filepath(
         stored_api_response,
         new_tracker,
-        new_source.decode(),
+        new_source,
         output_directory,
       )
 
@@ -91,7 +92,7 @@ def generate_new_torrent_from_file(
 
       if new_torrent_filepath:
         torrent_id = __get_torrent_id(stored_api_response)
-        new_torrent_data[b"info"][b"source"] = new_source
+        new_torrent_data[b"info"][b"source"] = new_source.encode()
         new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
         save_bencoded_data(new_torrent_filepath, new_torrent_data)
