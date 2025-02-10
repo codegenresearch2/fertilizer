@@ -50,5 +50,5 @@ class TorrentClientError(Exception):
     pass
 
 
-class TorrentClientAuthenticationError(Exception):
+class TorrentInjectionError(Exception):
     pass
