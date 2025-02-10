@@ -4,14 +4,14 @@ import requests_mock
 
 from tests.helpers import SetupTeardown, get_torrent_path
 from tests.support.deluge_matchers import (
-  add_label_matcher,
-  add_torrent_matcher,
-  apply_label_matcher,
-  auth_matcher,
-  connected_matcher,
-  get_labels_matcher,
-  label_plugin_matcher,
-  torrent_info_matcher,
+    add_label_matcher,
+    add_torrent_matcher,
+    apply_label_matcher,
+    auth_matcher,
+    connected_matcher,
+    get_labels_matcher,
+    label_plugin_matcher,
+    torrent_info_matcher,
 )
 
 from src.errors import TorrentClientError, TorrentClientAuthenticationError
