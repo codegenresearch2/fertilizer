@@ -75,9 +75,7 @@ def get_bencoded_data(filename: str) -> dict | None:
     try:
         with open(filename, "rb") as f:
             data = bencoder.decode(f.read())
-        if not isinstance(data, dict):
-            return None
-        return data
+        return data if isinstance(data, dict) else None
     except Exception:
         return None
 
