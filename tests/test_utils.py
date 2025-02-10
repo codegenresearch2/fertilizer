@@ -25,3 +25,7 @@ class TestUrlJoin(SetupTeardown):
   def test_joins_with_multiple_slashes(self):
     result = url_join("example.com", "path//to", "resource")
     assert result == "example.com/path/to/resource"
+
+  def test_joins_paths_with_leading_and_trailing_slashes(self):
+    result = url_join("example.com", "/path/", "to/", "/resource/")
+    assert result == "example.com/path/to/resource"
