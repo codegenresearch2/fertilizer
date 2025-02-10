@@ -28,8 +28,8 @@ def generate_new_torrent_from_file(
   Args:
     `source_torrent_path` (`str`): The path to the original torrent file.
     `output_directory` (`str`): The directory to save the new torrent file.
-    `red_api` (`RedApi`): The pre-configured API object for RED.
-    `ops_api` (`OpsApi`): The pre-configured API object for OPS.
+    `red_api` (`RedAPI`): The pre-configured API object for RED.
+    `ops_api` (`OpsAPI`): The pre-configured API object for OPS.
     `input_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
     `output_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
   Returns:
