@@ -31,7 +31,7 @@ class Config:
 
   @property
   def server_port(self) -> str:
-    return self.__get_key("port", default=None)
+    return self.__get_key("port", default="9713")
 
   @server_port.setter
   def server_port(self, value: str):
@@ -41,4 +41,6 @@ class Config:
     try:
       return self._json[key]
     except KeyError:
-      return default
+      if default is not None:
+        return default
+      raise ConfigKeyError(f"Key '{key}' not found in config file.")
