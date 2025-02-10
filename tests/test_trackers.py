@@ -21,5 +21,3 @@ class TestTrackerMethods(SetupTeardown):
   def test_reciprocal_tracker(self):
     assert RedTracker.reciprocal_tracker() == OpsTracker
     assert OpsTracker.reciprocal_tracker() == RedTracker
-
-I have removed the improperly formatted comment from the code to address the `SyntaxError` that was causing the tests to fail. The updated code should now be able to run without any syntax errors.
