@@ -15,6 +15,16 @@ from src.parser import (
   calculate_infohash,
 )
 
+# Define the SetupTeardown class
+class SetupTeardown:
+    def setup_method(self):
+        # Setup method for the test
+        pass
+
+    def teardown_method(self):
+        # Teardown method for the test
+        pass
+
 
 class TestIsValidInfohash(SetupTeardown):
   def test_returns_true_for_valid_infohash(self):
