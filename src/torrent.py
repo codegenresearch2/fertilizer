@@ -28,8 +28,8 @@ def generate_new_torrent_from_file(
   Args:
     `source_torrent_path` (`str`): The path to the original torrent file.
     `output_directory` (`str`): The directory to save the new torrent file.
-    `red_api` (`RedApi`): The pre-configured API object for RED.
-    `ops_api` (`OpsApi`): The pre-configured API object for OPS.
+    `red_api` (`RedAPI`): The pre-configured API object for RED.
+    `ops_api` (`OpsAPI`): The pre-configured API object for OPS.
     `input_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
     `output_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
   Returns:
@@ -43,20 +43,22 @@ def generate_new_torrent_from_file(
     `Exception`: if an unknown error occurs.
   """
   try:
-    source_torrent_data = get_bencoded_data(source_torrent_path)
-    source_tracker = get_origin_tracker(source_torrent_data)
+    torrent_data = get_bencoded_data(source_torrent_path)
+    tracker = get_origin_tracker(torrent_data)
+    if tracker is None:
+      raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
   except TorrentDecodingError as e:
     raise TorrentDecodingError(f"Error decoding torrent file: {e}")
   except UnknownTrackerError as e:
-    raise UnknownTrackerError(f"Torrent not from OPS or RED based on source or announce URL: {e}")
+    raise UnknownTrackerError(f"Error determining torrent tracker: {e}")
 
-  new_torrent_data = copy.deepcopy(source_torrent_data)
-  new_tracker = source_tracker.reciprocal_tracker()
+  new_torrent_data = copy.deepcopy(torrent_data)
+  new_tracker = tracker.reciprocal_tracker()
   new_tracker_api = __get_reciprocal_tracker_api(new_tracker, red_api, ops_api)
   stored_api_response = None
 
   try:
-    all_possible_hashes = __calculate_all_possible_hashes(source_torrent_data, new_tracker.source_flags_for_creation())
+    all_possible_hashes = __calculate_all_possible_hashes(torrent_data, new_tracker.source_flags_for_creation())
   except Exception as e:
     raise Exception(f"Error calculating possible hashes: {e}")
 
@@ -72,7 +74,7 @@ def generate_new_torrent_from_file(
 
   for new_source in new_tracker.source_flags_for_creation():
     try:
-      new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
+      new_hash = recalculate_hash_for_new_source(torrent_data, new_source)
     except Exception as e:
       raise Exception(f"Error recalculating hash for new source: {e}")
 
@@ -117,8 +119,8 @@ def generate_new_torrent_from_file(
   raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
 
 
-def __calculate_all_possible_hashes(source_torrent_data: dict, sources: list[str]) -> list[str]:
-  return [recalculate_hash_for_new_source(source_torrent_data, source) for source in sources]
+def __calculate_all_possible_hashes(torrent_data: dict, sources: list[str]) -> list[str]:
+  return [recalculate_hash_for_new_source(torrent_data, source) for source in sources]
 
 
 def __check_matching_hashes(all_possible_hashes: list[str], infohashes: dict) -> str:
