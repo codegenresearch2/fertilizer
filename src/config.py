@@ -1,3 +1,4 @@
+import os
 import json
 
 from .errors import ConfigKeyError
@@ -30,10 +31,12 @@ class Config:
 
   @property
   def server_port(self) -> str:
-    return self._json.get("server_port", "9713")
+    return self.__get_key("server_port", "9713")
 
-  def __get_key(self, key):
+  def __get_key(self, key, default=None):
     try:
       return self._json[key]
     except KeyError:
+      if default is not None:
+        return default
       raise ConfigKeyError(f"Key '{key}' not found in config file.")
