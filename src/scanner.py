@@ -33,17 +33,17 @@ def scan_torrent_file(
   Returns:
     str: The path to the new .torrent file.
   Raises:
-    `TorrentDecodingError`: if the original torrent file could not be decoded.
-    `UnknownTrackerError`: if the original torrent file is not from OPS or RED.
-    `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.
-    `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
-    `TorrentExistsInClientError`: if the new torrent file already exists in the torrent client.
-    `Exception`: if an unknown error occurs.
+    TorrentDecodingError: if the original torrent file could not be decoded.
+    UnknownTrackerError: if the original torrent file is not from OPS or RED.
+    TorrentNotFoundError: if the original torrent file could not be found on the reciprocal tracker.
+    TorrentAlreadyExistsError: if the new torrent file already exists in the input or output directory.
+    TorrentExistsInClientError: if the new torrent file already exists in the torrent client.
+    Exception: if an unknown error occurs.
   """
   try:
     source_torrent_path = assert_path_exists(source_torrent_path)
-  except FileNotFoundError as e:
-    raise TorrentNotFoundError(str(e)) from e
+  except FileNotFoundError:
+    raise TorrentNotFoundError(f"File not found: {source_torrent_path}")
 
   output_directory = mkdir_p(output_directory)
 
@@ -105,13 +105,13 @@ def scan_torrent_directory(
   Returns:
     str: A report of the scan.
   Raises:
-    `FileNotFoundError`: if the input directory does not exist.
-    `TorrentDecodingError`: if the torrent file could not be decoded.
-    `UnknownTrackerError`: if the torrent file is not from OPS or RED.
-    `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
-    `TorrentExistsInClientError`: if the new torrent file already exists in the torrent client.
-    `TorrentNotFoundError`: if the torrent file could not be found on the reciprocal tracker.
-    `Exception`: if an unknown error occurs.
+    FileNotFoundError: if the input directory does not exist.
+    TorrentDecodingError: if the torrent file could not be decoded.
+    UnknownTrackerError: if the torrent file is not from OPS or RED.
+    TorrentAlreadyExistsError: if the new torrent file already exists in the input or output directory.
+    TorrentExistsInClientError: if the new torrent file already exists in the torrent client.
+    TorrentNotFoundError: if the torrent file could not be found on the reciprocal tracker.
+    Exception: if an unknown error occurs.
   """
   try:
     input_directory = assert_path_exists(input_directory)
@@ -155,7 +155,7 @@ def scan_torrent_directory(
           raise TorrentExistsInClientError(str(e)) from e
 
       if was_previously_generated:
-        p.already_exists.print("Torrent was previously generated but was injected into your torrent client.")
+        p.already_exists.print("Torrent was previously generated.")
       else:
         p.generated.print(
           f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
@@ -189,10 +189,10 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
     try:
       torrent_data = get_bencoded_data(filepath)
 
-      if torrent_data:
+      if torrent_data and 'info' in torrent_data:
         infohash = calculate_infohash(torrent_data)
         infohash_dict[infohash] = filepath
-    except UnicodeDecodeError:
+    except Exception:
       continue
 
   return infohash_dict
