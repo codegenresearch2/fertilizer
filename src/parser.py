@@ -17,22 +17,22 @@ def is_valid_infohash(infohash: str) -> bool:
 
 def get_source(torrent_data: dict) -> bytes | None:
   try:
-    return torrent_data["info"]["source"]
+    return torrent_data[b"info"][b"source"]
   except KeyError:
     return None
 
 def get_name(torrent_data: dict) -> bytes | None:
   try:
-    return torrent_data["info"]["name"]
+    return torrent_data[b"info"][b"name"]
   except KeyError:
     return None
 
 def get_announce_url(torrent_data: dict) -> list[bytes] | None:
-  from_announce = torrent_data.get("announce")
+  from_announce = torrent_data.get(b"announce")
   if from_announce:
     return from_announce if isinstance(from_announce, list) else [from_announce]
 
-  from_trackers = torrent_data.get("trackers")
+  from_trackers = torrent_data.get(b"trackers")
   if from_trackers:
     return flatten(from_trackers)
 
@@ -42,22 +42,22 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
   source = get_source(torrent_data) or b''
   announce_url = get_announce_url(torrent_data) or []
 
-  if source in RedTracker.source_flags_for_search() or any(RedTracker.announce_url() in url for url in announce_url):
+  if source in RedTracker.source_flags_for_search() or any(RedTracker.announce_url().encode() in url for url in announce_url):
     return RedTracker
 
-  if source in OpsTracker.source_flags_for_search() or any(OpsTracker.announce_url() in url for url in announce_url):
+  if source in OpsTracker.source_flags_for_search() or any(OpsTracker.announce_url().encode() in url for url in announce_url):
     return OpsTracker
 
   return None
 
 def calculate_infohash(torrent_data: dict) -> str:
-  if 'info' not in torrent_data:
+  if b'info' not in torrent_data:
     raise TorrentDecodingError("Torrent data does not contain 'info' key")
-  return sha1(bencoder.encode(torrent_data["info"])).hexdigest().upper()
+  return sha1(bencoder.encode(torrent_data[b'info'])).hexdigest().upper()
 
-def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
+def recalculate_hash_for_new_source(torrent_data: dict, new_source: bytes) -> str:
   torrent_data = copy.deepcopy(torrent_data)
-  torrent_data["info"]["source"] = new_source
+  torrent_data[b'info'][b'source'] = new_source
 
   return calculate_infohash(torrent_data)
 
