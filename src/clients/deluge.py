@@ -40,10 +40,10 @@ class Deluge(TorrentClient):
         ]
 
         response = self.__wrap_request("web.update_ui", params)
-        if "torrents" not in response:
+        if "result" not in response or "torrents" not in response["result"]:
             raise TorrentClientError("Client returned unexpected response (object missing)")
 
-        torrent = response["torrents"].get(infohash)
+        torrent = response["result"]["torrents"].get(infohash)
 
         if torrent is None:
             raise TorrentClientError(f"Torrent not found in client ({infohash})")
@@ -81,14 +81,14 @@ class Deluge(TorrentClient):
             raise TorrentClientAuthenticationError("Password not defined in the Deluge RPC URL. Please format the URL as http://:<PASSWORD>@localhost:8112")
 
         auth_response = self.__request("auth.login", [password])
-        if "result" in auth_response and not auth_response["result"]:
+        if "result" not in auth_response or not auth_response["result"]:
             raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
 
         return self.__request("web.connected")
 
     def __is_label_plugin_enabled(self):
         response = self.__wrap_request("core.get_enabled_plugins")
-        return "Label" in response
+        return "Label" in response.get("result", [])
 
     def __determine_label(self, torrent_info):
         current_label = torrent_info.get("label")
@@ -101,7 +101,7 @@ class Deluge(TorrentClient):
             return
 
         current_labels = self.__wrap_request("label.get_labels")
-        if label not in current_labels:
+        if label not in current_labels.get("result", []):
             self.__wrap_request("label.add", [label])
 
         return self.__wrap_request("label.set_torrent", [infohash, label])
