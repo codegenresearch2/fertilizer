@@ -51,7 +51,7 @@ def scan_torrent_file(
     output_infohashes = __collect_infohashes_from_files(output_torrents)
 
     try:
-        new_tracker, new_torrent_filepath, was_previously_generated = generate_new_torrent_from_file(
+        new_tracker, new_torrent_filepath = generate_new_torrent_from_file(
             source_torrent_path,
             output_directory,
             red_api,
@@ -70,7 +70,7 @@ def scan_torrent_file(
     except Exception as e:
         raise Exception(f"An unknown error occurred: {e}")
 
-    if injector and not was_previously_generated:
+    if injector and new_torrent_filepath:
         try:
             injector.inject_torrent(
                 source_torrent_path,
@@ -123,7 +123,7 @@ def scan_torrent_directory(
         print(f"({i}/{p.total}) {basename}")
 
         try:
-            new_tracker, new_torrent_filepath, was_previously_generated = generate_new_torrent_from_file(
+            new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
                 source_torrent_path,
                 output_directory,
                 red_api,
@@ -132,16 +132,14 @@ def scan_torrent_directory(
                 output_infohashes,
             )
 
-            if injector and not was_previously_generated:
+            if injector:
                 injector.inject_torrent(
                     source_torrent_path,
                     new_torrent_filepath,
                     new_tracker.site_shortname(),
                 )
 
-            if was_previously_generated:
-                print("Torrent was previously generated.")
-            else:
+            if new_torrent_filepath:
                 print(
                     f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
                 )
