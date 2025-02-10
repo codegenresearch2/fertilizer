@@ -1,7 +1,8 @@
 import os
 from urllib.parse import urlparse, unquote
 
-from src.utils import url_join
+from src.filesystem import sane_join
+from ..utils import url_join
 
 
 class TorrentClient:
@@ -26,7 +27,7 @@ class TorrentClient:
     if base_path is not None:
       href = url_join(origin, os.path.normpath(base_path))
     else:
-      href = url_join(origin, parsed_url.path)
+      href = url_join(origin, (parsed_url.path if parsed_url.path != "/" else ""))
 
     return href, username, password
 
