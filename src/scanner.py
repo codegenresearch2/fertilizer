@@ -143,7 +143,7 @@ def scan_torrent_directory(
                 output_infohashes,
             )
 
-            if injector:
+            if injector and not was_previously_generated:
                 try:
                     injector.inject_torrent(
                         source_torrent_path,
