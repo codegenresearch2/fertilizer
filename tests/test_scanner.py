@@ -9,7 +9,7 @@ from colorama import Fore
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
-from src.errors import TorrentExistsInClientError
+from src.errors import TorrentExistsInClientError, TorrentDecodingError
 from src.scanner import scan_torrent_directory, scan_torrent_file
 
 # Define constants for expected responses
@@ -18,7 +18,7 @@ ERROR_RESPONSE = {"status": "error", "message": "An error occurred"}
 
 class TestScanTorrentFile(SetupTeardown):
     def test_handles_missing_info_key_errors(self, red_api, ops_api):
-        with pytest.raises(Exception):
+        with pytest.raises(TorrentDecodingError):
             torrent_path = get_torrent_path("no_info")
             scan_torrent_file(torrent_path, "/tmp/output", red_api, ops_api, None)
 
