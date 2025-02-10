@@ -55,29 +55,25 @@ def generate_new_torrent_from_file(
     if new_hash in output_infohashes:
       raise TorrentAlreadyExistsError(f"Torrent already exists in output directory as {output_infohashes[new_hash]}")
 
-    stored_api_response = None
-    try:
-      stored_api_response = new_tracker_api.find_torrent(new_hash)
-    except Exception as e:
-      raise Exception(f"An error occurred while querying the API: {e}")
+    api_response = new_tracker_api.find_torrent(new_hash)
 
-    if stored_api_response and stored_api_response["status"] == "success":
+    if api_response and api_response["status"] == "success":
       new_torrent_filepath = __generate_torrent_output_filepath(
-        stored_api_response,
+        api_response,
         new_source.decode("utf-8"),
         output_directory,
         new_tracker,
       )
 
       if new_torrent_filepath:
-        torrent_id = __get_torrent_id(stored_api_response)
+        torrent_id = __get_torrent_id(api_response)
 
         new_torrent_data[b"info"][b"source"] = new_source  # This is already bytes rather than str
         new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
 
         return (new_tracker, save_bencoded_data(new_torrent_filepath, new_torrent_data))
-    elif stored_api_response and stored_api_response["error"] in ("bad hash parameter", "bad parameters"):
+    elif api_response and api_response["error"] in ("bad hash parameter", "bad parameters"):
       raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
     else:
       raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
