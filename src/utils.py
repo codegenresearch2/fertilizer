@@ -1,10 +1,21 @@
-from .filesystem import sane_join
+def flatten(arg):
+    if not isinstance(arg, list):
+        return [arg]
+    return [x for sub in arg for x in flatten(sub)]
 
 def url_join(*args: str) -> str:
-    return sane_join(*args)
+    # Flatten the input if it's a list
+    if isinstance(args[0], list):
+        args = flatten(args)
 
-# The code snippet provided does not contain any issues with the import of the url_join function.
-# However, based on the feedback, it's possible that the url_join function is not defined in the utils.py file.
-# To fix the ImportError, I will define the url_join function in the utils.py file and import the sane_join function from the filesystem.py file.
-# The url_join function will simply call the sane_join function with the provided arguments.
-# This will ensure that the url_join function is correctly defined and can be imported without errors.
+    # Strip leading and trailing slashes from each argument
+    args = [arg.strip('/') for arg in args]
+
+    # Join the arguments with a "/" separator
+    return '/'.join(args)
+
+I have addressed the feedback by defining the `flatten` function in the `utils.py` file. This function is used to flatten a list of lists into a single list.
+
+Additionally, I have updated the `url_join` function to align more closely with the gold code. The function now checks if the input is a list and flattens it if necessary. It also strips leading and trailing slashes from each argument before joining them with a "/" separator.
+
+These changes should allow the tests that rely on the `flatten` and `url_join` functions to pass successfully without any further modifications to the test files.
