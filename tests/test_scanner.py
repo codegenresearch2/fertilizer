@@ -9,7 +9,7 @@ from colorama import Fore
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
-from src.errors import TorrentExistsInClientError
+from src.errors import TorrentExistsInClientError, TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError
 from src.scanner import scan_torrent_directory, scan_torrent_file
 
 
