@@ -1,7 +1,6 @@
 import os
 from urllib.parse import urlparse, unquote
-
-from src.filesystem import sane_join, mkdir_p, assert_path_exists, list_files_of_extension, replace_extension
+from src.utils import url_join
 
 
 class TorrentClient:
@@ -24,9 +23,9 @@ class TorrentClient:
         origin = f"{parsed_url.scheme}://{parsed_url.hostname}:{parsed_url.port}"
 
         if base_path is not None:
-            href = sane_join(origin, os.path.normpath(base_path))
+            href = url_join(origin, os.path.normpath(base_path))
         else:
-            href = sane_join(origin, (parsed_url.path if parsed_url.path != "/" else ""))
+            href = url_join(origin, parsed_url.path if parsed_url.path != "/" else "")
 
         return href, username, password
 
@@ -40,14 +39,3 @@ class TorrentClient:
             return current_label
 
         return f"{current_label}.{self.torrent_label}"
-
-    def _ensure_path_exists(self, path):
-        assert_path_exists(path)
-        mkdir_p(path)
-        return path
-
-    def _list_torrent_files(self, directory, extension=".torrent"):
-        return list_files_of_extension(directory, extension)
-
-    def _replace_torrent_extension(self, filepath, new_extension):
-        return replace_extension(filepath, new_extension)
