@@ -19,14 +19,14 @@ def is_valid_infohash(infohash: str) -> bool:
 
 def get_source(torrent_data: dict) -> bytes | None:
     try:
-        return torrent_data[b"info"].get(b"source")
+        return torrent_data[b"info"][b"source"]
     except KeyError:
         return None
 
 
 def get_name(torrent_data: dict) -> bytes | None:
     try:
-        return torrent_data[b"info"].get(b"name")
+        return torrent_data[b"info"][b"name"]
     except KeyError:
         return None
 
@@ -57,8 +57,8 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
 
 
 def calculate_infohash(torrent_data: dict) -> str:
-    if torrent_data is None or b"info" not in torrent_data:
-        raise TorrentDecodingError("The 'info' key is missing from the torrent data")
+    if b"info" not in torrent_data:
+        raise TorrentDecodingError("Torrent data does not contain 'info' key")
     return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
 
 
