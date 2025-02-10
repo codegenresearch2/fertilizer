@@ -28,7 +28,7 @@ class TestScanTorrentFile(SetupTeardown):
       scan_torrent_file(source_torrent_path, output_directory, red_api, ops_api, None)
 
     assert os.path.isdir(output_directory)
-    shutil.rmtree(output_directory)
+    shutil.rmtree(output_directory, ignore_errors=True)
 
   def test_returns_torrent_filepath(self, red_api, ops_api):
     source_torrent_path = assert_path_exists(get_torrent_path("red_source"))
@@ -100,7 +100,7 @@ class TestScanTorrentDirectory(SetupTeardown):
     scan_torrent_directory(input_directory, output_directory, red_api, ops_api, None)
 
     assert os.path.isdir(output_directory)
-    shutil.rmtree(output_directory)
+    shutil.rmtree(output_directory, ignore_errors=True)
 
   def test_lists_generated_torrents(self, capsys, red_api, ops_api):
     input_directory = assert_path_exists("/tmp/input")
@@ -300,4 +300,4 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      print(scan_torrent_directory(input_directory, output_
+      print(scan
