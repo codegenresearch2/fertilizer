@@ -174,7 +174,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
     # Test for returning appropriately if torrent already exists
     def test_returns_appropriately_if_torrent_already_exists(self, red_api, ops_api):
         filepath = "/tmp/OPS/foo [OPS].torrent"
-        copy_and_mkdir(filepath)
+        copy_and_mkdir(filepath, "/tmp/OPS/")  # Added destination path
 
         with requests_mock.Mocker() as m:
             m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
@@ -209,3 +209,11 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
                 generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
 
         assert str(excinfo.value) == "An unknown error occurred in the API response from OPS"
+
+    # Test for raising error if torrent has no info
+    def test_raises_error_if_torrent_has_no_info(self, red_api, ops_api):
+        with pytest.raises(TorrentDecodingError) as excinfo:
+            torrent_path = get_torrent_path("no_info")
+            generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+
+        assert str(excinfo.value) == "Torrent data does not contain 'info' key"
