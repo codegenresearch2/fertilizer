@@ -1,21 +1,8 @@
 import os
 
-def flatten(arg):
-  if not isinstance(arg, list):
-    return [arg]
-  return [x for sub in arg for x in flatten(sub)]
-
 def url_join(*args):
-  path_parts = [part.lstrip(os.path.sep) for part in args]
-  path_parts = [part for part in path_parts if part]  # Remove empty parts
-  return "/".join(path_parts)
-
-class TestFlatten:
-  def test_flattens_list(self):
-    assert flatten([1, [2, 3], 4]) == [1, 2, 3, 4]
-
-  def test_returns_already_flat_list(self):
-    assert flatten([1, 2, 3]) == [1, 2, 3]
+  parts = [str(arg).strip("/") for arg in args]
+  return "/".join(parts)
 
 class TestUrlJoin:
   def test_joins_paths(self):
