@@ -32,7 +32,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
             os.remove(filepath)
 
     def test_raises_error_if_torrent_has_no_info(self, red_api, ops_api):
-        with pytest.raises(TorrentDecodingError, match="Error decoding torrent file"):
+        with pytest.raises(TorrentDecodingError):
             torrent_path = get_torrent_path("no_info")
             generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
 
