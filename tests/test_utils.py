@@ -1,35 +1,18 @@
 from .helpers import SetupTeardown
-from src.utils import url_join
+from src.utils import flatten
 
-class TestUrlJoin(SetupTeardown):
-  def test_joins_paths_without_trailing_slash(self):
-    result = url_join("https://example.com", "api", "users")
-    assert result == "https://example.com/api/users"
+class TestFlatten(SetupTeardown):
+  def test_flattens_nested_list(self):
+    assert flatten([1, [2, [3, 4]], 5]) == [1, 2, 3, 4, 5]
 
-  def test_joins_paths_with_leading_slash(self):
-    result = url_join("https://example.com", "/api", "users")
-    assert result == "https://example.com/api/users"
+  def test_returns_single_element_list(self):
+    assert flatten(6) == [6]
 
-  def test_joins_paths_with_trailing_slash(self):
-    result = url_join("https://example.com", "api/", "users")
-    assert result == "https://example.com/api/users"
+  def test_returns_empty_list_for_empty_input(self):
+    assert flatten([]) == []
 
-  def test_joins_paths_with_multiple_slashes(self):
-    result = url_join("https://example.com", "api//", "/users")
-    assert result == "https://example.com/api/users"
+  def test_flattens_empty_nested_list(self):
+    assert flatten([[], [[]], [1, 2, 3]]) == [1, 2, 3]
 
-  def test_joins_paths_with_empty_parts(self):
-    result = url_join("https://example.com", "", "api", "", "users")
-    assert result == "https://example.com/api/users"
-
-  def test_joins_paths_with_stripped_slashes(self):
-    result = url_join("https://example.com", "/api/", "/users/")
-    assert result == "https://example.com/api/users"
-
-  def test_joins_full_uri_with_path(self):
-    result = url_join("https://example.com/", "api", "users")
-    assert result == "https://example.com/api/users"
-
-  def test_joins_paths_with_query_string(self):
-    result = url_join("https://example.com", "api", "users?page=1")
-    assert result == "https://example.com/api/users?page=1"
+  def test_handles_non_list_elements(self):
+    assert flatten([1, [2, "three"], 4]) == [1, 2, "three", 4]
