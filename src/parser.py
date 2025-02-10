@@ -42,10 +42,10 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
   source = get_source(torrent_data) or b''
   announce_url = get_announce_url(torrent_data) or []
 
-  if source in RedTracker.source_flags_for_search() or any(RedTracker.announce_url().encode() in url for url in announce_url):
+  if source.decode() in RedTracker.source_flags_for_search() or any(RedTracker.announce_url() in url.decode() for url in announce_url):
     return RedTracker
 
-  if source in OpsTracker.source_flags_for_search() or any(OpsTracker.announce_url().encode() in url for url in announce_url):
+  if source.decode() in OpsTracker.source_flags_for_search() or any(OpsTracker.announce_url() in url.decode() for url in announce_url):
     return OpsTracker
 
   return None
@@ -67,7 +67,8 @@ def get_bencoded_data(filename: str) -> dict:
     with open(filename, 'rb') as f:
       data = bencoder.decode(f.read())
     return data
-  except Exception:
+  except Exception as e:
+    print(f"Error decoding torrent file: {e}")
     return None
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
