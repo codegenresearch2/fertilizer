@@ -27,7 +27,7 @@ class OpsTracker(Tracker):
 
   @staticmethod
   def source_flags_for_creation():
-    return [b"OPS", b"APL"]
+    return [b"OPS", b"APL", b""]
 
   @staticmethod
   def announce_url():
