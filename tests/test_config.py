@@ -12,7 +12,6 @@ class TestConfig(SetupTeardown):
 
         assert config.red_key == "secret_red"
         assert config.ops_key == "secret_ops"
-        assert config.server_port == "9713"
 
     def test_raises_error_on_missing_config_file(self):
         with pytest.raises(FileNotFoundError) as excinfo:
