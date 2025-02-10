@@ -55,6 +55,7 @@ def generate_new_torrent_from_file(
     if new_hash in output_infohashes:
       raise TorrentAlreadyExistsError(f"Torrent already exists in output directory as {output_infohashes[new_hash]}")
 
+    stored_api_response = None  # Initialize outside the loop
     stored_api_response = new_tracker_api.find_torrent(new_hash)
 
     if stored_api_response["status"] == "success":
