@@ -35,7 +35,7 @@ def scan_torrent_file(
     str: The path to the new .torrent file.
 
   Raises:
-    Exceptions raised by `generate_new_torrent_from_file`.
+    See `generate_new_torrent_from_file`.
   """
   source_torrent_path = assert_path_exists(source_torrent_path)
   output_directory = mkdir_p(output_directory)
