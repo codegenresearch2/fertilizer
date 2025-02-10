@@ -1,10 +1,10 @@
+import os
 from colorama import Fore
 
 from src.api import RedAPI, OpsAPI
 from src.args import parse_args
 from src.config import Config
 from src.scanner import scan_torrent_directory, scan_torrent_file
-
 from src.webserver import run_webserver
 
 
@@ -14,19 +14,22 @@ def cli_entrypoint(args):
     red_api, ops_api = __verify_api_keys(config)
 
     if args.server:
-      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=config.server_port)
+      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
     elif args.input_file:
       print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
     elif args.input_directory:
       print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
+  except KeyError:
+    print(f"{Fore.RED}Missing configuration key. Please check your config file.{Fore.RESET}")
+    exit(1)
   except Exception as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
 
 
 def __verify_api_keys(config):
-  red_api = RedAPI(config.red_key)
-  ops_api = OpsAPI(config.ops_key)
+  red_api = RedAPI(config.get("red_key", "default_red_key"))
+  ops_api = OpsAPI(config.get("ops_key", "default_ops_key"))
 
   # This will perform a lookup with the API and raise if there was a failure.
   # Also caches the announce URL for future use which is a nice bonus
