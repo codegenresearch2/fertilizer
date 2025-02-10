@@ -23,15 +23,15 @@ class Deluge(TorrentClient):
 
     def setup(self):
         try:
-            connection_response = self.__authenticate()
+            self._deluge_cookie = self.__authenticate()
             self._label_plugin_enabled = self.__is_label_plugin_enabled()
-            return connection_response
-        except TorrentClientAuthenticationError as auth_error:
-            raise auth_error
-        except TorrentClientTimeoutError as timeout_error:
-            raise timeout_error
-        except Exception as setup_error:
-            raise TorrentClientError("Failed to set up Deluge client") from setup_error
+            return True
+        except TorrentClientAuthenticationError:
+            raise
+        except TorrentClientTimeoutError:
+            raise
+        except Exception as e:
+            raise TorrentClientError("Failed to set up Deluge client") from e
 
     def get_torrent_info(self, infohash):
         infohash = infohash.lower()
@@ -42,8 +42,8 @@ class Deluge(TorrentClient):
 
         try:
             response = self.__wrap_request("web.update_ui", params)
-        except TorrentClientError as client_error:
-            raise client_error
+        except TorrentClientError as e:
+            raise e
 
         if "torrents" not in response:
             raise TorrentClientError("Client returned unexpected response (object missing)")
@@ -83,14 +83,14 @@ class Deluge(TorrentClient):
 
         try:
             new_torrent_infohash = self.__wrap_request("core.add_torrent_file", params)
-        except TorrentClientError as client_error:
-            raise client_error
+        except TorrentClientError as e:
+            raise e
 
         newtorrent_label = self.__determine_label(source_torrent_info)
         try:
             self.__set_label(new_torrent_infohash, newtorrent_label)
-        except TorrentClientError as client_error:
-            raise client_error
+        except TorrentClientError as e:
+            raise e
 
         return new_torrent_infohash
 
@@ -99,23 +99,55 @@ class Deluge(TorrentClient):
         if not password:
             raise TorrentClientAuthenticationError("You need to define a password in the Deluge RPC URL. (e.g. http://:<PASSWORD>@localhost:8112)")
 
+        payload = {"method": "auth.login", "params": [password], "id": self._deluge_request_id}
         try:
-            response = self.__wrap_request("auth.login", [password])
-        except TorrentClientError as auth_error:
-            raise auth_error
+            response = requests.post(
+                _href,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10,
+            )
+            self._deluge_request_id += 1
+        except RequestException as e:
+            raise TorrentClientError(f"Failed to connect to Deluge at {_href}") from e
 
-        if not response:
-            raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
+        try:
+            json_response = response.json()
+        except json.JSONDecodeError as e:
+            raise TorrentClientError("Deluge method response was non-JSON") from e
 
-        return response
+        if "error" in json_response and json_response["error"]:
+            error_code = json_response["error"].get("code")
+            if error_code in self.ERROR_CODES:
+                raise self.ERROR_CODES[error_code](f"Deluge method returned an error: {json_response['error']}")
+            raise TorrentClientError(f"Deluge method returned an error: {json_response['error']}")
+
+        if "Set-Cookie" in response.headers:
+            return response.headers["Set-Cookie"].split(";")[0]
+        raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
 
     def __is_label_plugin_enabled(self):
+        payload = {"method": "core.get_enabled_plugins", "params": [], "id": self._deluge_request_id}
         try:
-            response = self.__wrap_request("core.get_enabled_plugins")
-        except TorrentClientError as client_error:
-            raise client_error
+            response = requests.post(
+                self._rpc_url.split("@")[1],
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10,
+            )
+            self._deluge_request_id += 1
+        except RequestException as e:
+            raise TorrentClientError(f"Failed to connect to Deluge at {self._rpc_url.split('@')[1]}") from e
 
-        return "Label" in response
+        try:
+            json_response = response.json()
+        except json.JSONDecodeError as e:
+            raise TorrentClientError("Deluge method response was non-JSON") from e
+
+        if "error" in json_response and json_response["error"]:
+            raise TorrentClientError(f"Deluge method returned an error: {json_response['error']}")
+
+        return "Label" in json_response["result"]
 
     def __determine_label(self, torrent_info):
         current_label = torrent_info.get("label")
@@ -129,29 +161,28 @@ class Deluge(TorrentClient):
         if not self._label_plugin_enabled:
             return
 
+        payload = {"method": "label.set_torrent", "params": [infohash, label], "id": self._deluge_request_id}
         try:
-            current_labels = self.__wrap_request("label.get_labels")
-        except TorrentClientError as client_error:
-            raise client_error
-
-        if label not in current_labels:
-            try:
-                self.__wrap_request("label.add", [label])
-            except TorrentClientError as client_error:
-                raise client_error
+            response = requests.post(
+                self._rpc_url.split("@")[1],
+                json=payload,
+                headers={"Content-Type": "application/json", "Cookie": self._deluge_cookie},
+                timeout=10,
+            )
+            self._deluge_request_id += 1
+        except RequestException as e:
+            raise TorrentClientError(f"Failed to connect to Deluge at {self._rpc_url.split('@')[1]}") from e
 
         try:
-            self.__wrap_request("label.set_torrent", [infohash, label])
-        except TorrentClientError as client_error:
-            raise client_error
+            json_response = response.json()
+        except json.JSONDecodeError as e:
+            raise TorrentClientError("Deluge method response was non-JSON") from e
+
+        if "error" in json_response and json_response["error"]:
+            raise TorrentClientError(f"Deluge method returned an error: {json_response['error']}")
 
     def __wrap_request(self, method, params=[]):
         href, _, _ = self._extract_credentials_from_url(self._rpc_url)
-
-        headers = CaseInsensitiveDict()
-        headers["Content-Type"] = "application/json"
-        if self._deluge_cookie:
-            headers["Cookie"] = self._deluge_cookie
 
         payload = {
             "method": method,
@@ -163,25 +194,25 @@ class Deluge(TorrentClient):
             response = requests.post(
                 href,
                 json=payload,
-                headers=headers,
+                headers={"Content-Type": "application/json", "Cookie": self._deluge_cookie},
                 timeout=10,
             )
             self._deluge_request_id += 1
-        except RequestException as network_error:
-            if network_error.response and network_error.response.status_code == 408:
-                raise TorrentClientTimeoutError(f"Deluge method {method} timed out after 10 seconds")
-            raise TorrentClientError(f"Failed to connect to Deluge at {href}") from network_error
+        except RequestException as e:
+            if isinstance(e, requests.Timeout):
+                raise TorrentClientTimeoutError(f"Deluge method {method} timed out after 10 seconds") from e
+            raise TorrentClientError(f"Failed to connect to Deluge at {href}") from e
 
         try:
             json_response = response.json()
-        except json.JSONDecodeError as json_parse_error:
-            raise TorrentClientError(f"Deluge method {method} response was non-JSON") from json_parse_error
+        except json.JSONDecodeError as e:
+            raise TorrentClientError("Deluge method response was non-JSON") from e
 
         if "error" in json_response and json_response["error"]:
             error_code = json_response["error"].get("code")
             if error_code in self.ERROR_CODES:
-                raise self.ERROR_CODES[error_code](f"Deluge method {method} returned an error: {json_response['error']}")
-            raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']}")
+                raise self.ERROR_CODES[error_code](f"Deluge method returned an error: {json_response['error']}")
+            raise TorrentClientError(f"Deluge method returned an error: {json_response['error']}")
 
         return json_response["result"]
 
