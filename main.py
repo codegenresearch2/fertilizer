@@ -14,7 +14,7 @@ def cli_entrypoint(args):
     red_api, ops_api = __verify_api_keys(config)
 
     if args.server:
-      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
+      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=config.server_port)
     elif args.input_file:
       print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
     elif args.input_directory:
@@ -28,8 +28,8 @@ def cli_entrypoint(args):
 
 
 def __verify_api_keys(config):
-  red_api = RedAPI(config.get("red_key", "default_red_key"))
-  ops_api = OpsAPI(config.get("ops_key", "default_ops_key"))
+  red_api = RedAPI(config.red_key)
+  ops_api = OpsAPI(config.ops_key)
 
   # This will perform a lookup with the API and raise if there was a failure.
   # Also caches the announce URL for future use which is a nice bonus
