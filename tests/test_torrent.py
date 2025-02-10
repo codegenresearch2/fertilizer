@@ -18,7 +18,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("red_source")
-      new_tracker, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert os.path.isfile(filepath)
@@ -34,7 +34,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("ops_source")
-      new_tracker, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
@@ -49,7 +49,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("qbit_ops")
-      new_tracker, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
