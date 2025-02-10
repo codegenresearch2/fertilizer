@@ -103,7 +103,7 @@ class TestSetup(SetupTeardown):
             assert not deluge_client._label_plugin_enabled
 
 
-class TestGetTorrentInfo:
+class TestGetTorrentInfo(SetupTeardown):
     def test_returns_torrent_details(self, api_url, deluge_client, torrent_info_response):
         with requests_mock.Mocker() as m:
             m.post(
@@ -185,7 +185,7 @@ class TestGetTorrentInfo:
             assert response["complete"]
 
 
-class TestInjectTorrent:
+class TestInjectTorrent(SetupTeardown):
     def test_injects_torrent(self, api_url, deluge_client, torrent_info_response):
         torrent_path = get_torrent_path("red_source")
 
