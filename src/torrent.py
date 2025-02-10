@@ -77,8 +77,8 @@ def generate_new_torrent_from_file(
 
         return (new_tracker, save_bencoded_data(new_torrent_filepath, new_torrent_data))
     else:
-      error_message = stored_api_response.get("error", "An unknown error occurred in the API response")
-      raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}: {error_message}")
+      error_message = stored_api_response.get("error", "An unknown error occurred")
+      raise Exception(f"An unknown error occurred in the API response: {error_message}")
 
 
 def generate_torrent_output_filepath(api_response: dict, tracker_name: str, new_source: str, output_directory: str) -> str:
