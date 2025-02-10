@@ -10,7 +10,6 @@ from .errors import (
     TorrentNotFoundError,
     TorrentAlreadyExistsError,
     TorrentExistsInClientError,
-    FileNotFoundError,
 )
 from .injection import Injection
 
@@ -81,6 +80,7 @@ def scan_torrent_file(
                 new_torrent_filepath,
                 new_tracker.site_shortname(),
             )
+            print(f"Torrent was previously generated and injected into your torrent client.")
         except Exception as e:
             raise Exception(str(e))
 
