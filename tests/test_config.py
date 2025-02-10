@@ -5,27 +5,55 @@ from src.config import Config
 from src.errors import ConfigKeyError
 
 
+class SetupTeardown:
+    def setup(self):
+        # Setup logic here
+        pass
+
+    def teardown(self):
+        # Teardown logic here
+        pass
+
+
 class TestConfig(SetupTeardown):
-  def test_loads_config(self):
-    config = Config().load("tests/support/settings.json")
+    def test_loads_config(self):
+        config = Config().load("tests/support/settings.json")
 
-    assert config.red_key == "secret_red"
-    assert config.ops_key == "secret_ops"
+        assert config.red_key == "secret_red"
+        assert config.ops_key == "secret_ops"
+        assert config.server_port == "9713"
 
-  def test_raises_error_on_missing_config_file(self):
-    with pytest.raises(FileNotFoundError) as excinfo:
-      Config().load("tests/support/missing.json")
+    def test_raises_error_on_missing_config_file(self):
+        with pytest.raises(FileNotFoundError) as excinfo:
+            Config().load("tests/support/missing.json")
 
-    assert "tests/support/missing.json does not exist" in str(excinfo.value)
+        assert "tests/support/missing.json does not exist" in str(excinfo.value)
 
-  def test_raises_error_on_missing_key(self):
-    with open("/tmp/empty.json", "w") as f:
-      f.write("{}")
+    def test_raises_error_on_missing_key_without_default(self):
+        with open("/tmp/empty.json", "w") as f:
+            f.write("{}")
 
-    config = Config().load("/tmp/empty.json")
+        config = Config().load("/tmp/empty.json")
 
-    with pytest.raises(ConfigKeyError) as excinfo:
-      config.red_key
+        with pytest.raises(ConfigKeyError) as excinfo:
+            config.red_key
 
-    assert "Key 'red_key' not found in config file." in str(excinfo.value)
-    os.remove("/tmp/empty.json")
+        assert "Key 'red_key' not found in config file." in str(excinfo.value)
+        os.remove("/tmp/empty.json")
+
+    def test_returns_default_value_if_present(self):
+        with open("/tmp/empty.json", "w") as f:
+            f.write("{}")
+
+        config = Config().load("/tmp/empty.json")
+
+        assert config.server_port == "9713"
+        os.remove("/tmp/empty.json")
+
+    def setup(self):
+        # Additional setup logic if needed
+        pass
+
+    def teardown(self):
+        # Additional teardown logic if needed
+        pass
