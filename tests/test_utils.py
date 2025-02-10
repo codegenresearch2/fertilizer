@@ -1,7 +1,7 @@
 from .helpers import SetupTeardown
 from src.utils import url_join
 
-class TestUrlJoinFlatten(SetupTeardown):
+class TestUrlJoin(SetupTeardown):
   def test_joins_paths_without_trailing_slash(self):
     assert url_join("https://example.com", "api", "users") == "https://example.com/api/users"
 
