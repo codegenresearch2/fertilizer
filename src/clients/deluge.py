@@ -100,14 +100,14 @@ class Deluge(TorrentClient):
             raise TorrentClientAuthenticationError("You need to define a password in the Deluge RPC URL. (e.g. http://:<PASSWORD>@localhost:8112)")
 
         try:
-            auth_response = self.__wrap_request("auth.login", [password])
+            response = self.__wrap_request("auth.login", [password])
         except TorrentClientError as auth_error:
             raise auth_error
 
-        if not auth_response:
+        if not response:
             raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
 
-        return auth_response
+        return response
 
     def __is_label_plugin_enabled(self):
         try:
@@ -141,7 +141,7 @@ class Deluge(TorrentClient):
                 raise client_error
 
         try:
-            return self.__wrap_request("label.set_torrent", [infohash, label])
+            self.__wrap_request("label.set_torrent", [infohash, label])
         except TorrentClientError as client_error:
             raise client_error
 
@@ -153,14 +153,16 @@ class Deluge(TorrentClient):
         if self._deluge_cookie:
             headers["Cookie"] = self._deluge_cookie
 
+        payload = {
+            "method": method,
+            "params": params,
+            "id": self._deluge_request_id,
+        }
+
         try:
             response = requests.post(
                 href,
-                json={
-                    "method": method,
-                    "params": params,
-                    "id": self._deluge_request_id,
-                },
+                json=payload,
                 headers=headers,
                 timeout=10,
             )
