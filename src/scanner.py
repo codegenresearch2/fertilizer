@@ -70,7 +70,7 @@ def scan_torrent_file(
     except Exception as e:
         raise Exception(f"An unknown error occurred: {e}")
 
-    if injector and new_torrent_filepath:
+    if injector:
         try:
             injector.inject_torrent(
                 source_torrent_path,
@@ -123,7 +123,7 @@ def scan_torrent_directory(
         print(f"({i}/{p.total}) {basename}")
 
         try:
-            new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
+            new_tracker, new_torrent_filepath = generate_new_torrent_from_file(
                 source_torrent_path,
                 output_directory,
                 red_api,
