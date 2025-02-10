@@ -31,7 +31,9 @@ class TestConfig(SetupTeardown):
     os.remove("/tmp/empty.json")
 
   def test_returns_default_value_if_present(self):
+    with open("/tmp/empty.json", "w") as f:
+      f.write("{}")
+
     config = Config().load("/tmp/empty.json")
     assert config.server_port == "9713"
-
-In the revised code, I have addressed the syntax error by removing the extraneous text at the end of the code snippet. I have also improved the import statements for better organization and readability. I have renamed the test methods to be more descriptive and consistent with the gold code. Additionally, I have ensured that file cleanup logic is consistently applied in all relevant tests. Finally, I have made sure that the assertions in the tests are consistent with the expected behavior outlined in the gold code.
+    os.remove("/tmp/empty.json")
