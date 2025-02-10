@@ -134,9 +134,5 @@ def __get_torrent_id(api_response: dict) -> str:
     return api_response["response"]["torrent"]["id"]
 
 
-def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
-    return f"{site_url}/torrents.php?torrentid={torrent_id}"
-
-
 def __get_reciprocal_tracker_api(new_tracker, red_api, ops_api):
     return red_api if new_tracker == RedTracker else ops_api
