@@ -29,7 +29,7 @@ class TorrentClient:
         if base_path is not None:
             href = url_join(origin, os.path.normpath(base_path))
         else:
-            href = url_join(origin, parsed_url.path if parsed_url.path != "/" else "")
+            href = url_join(origin, parsed_url.path if parsed_url.path != "" else "")
 
         return href, username, password
 
