@@ -68,7 +68,7 @@ def generate_new_torrent_from_file(
             f"Torrent already exists in input directory at {input_infohashes[found_input_hash]}"
         )
     if found_output_hash:
-        torrent_already_existed = True
+        return new_tracker, found_output_hash, True
 
     for new_source in new_tracker.source_flags_for_creation():
         new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
@@ -83,8 +83,7 @@ def generate_new_torrent_from_file(
             )
 
             if os.path.exists(new_torrent_filepath):
-                torrent_already_existed = True
-                return (new_tracker, new_torrent_filepath, torrent_already_existed)
+                return new_tracker, new_torrent_filepath, True
 
             if new_torrent_filepath:
                 torrent_id = __get_torrent_id(stored_api_response)
@@ -95,7 +94,7 @@ def generate_new_torrent_from_file(
                 new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
                 save_bencoded_data(new_torrent_filepath, new_torrent_data)
 
-                return (new_tracker, new_torrent_filepath, torrent_already_existed)
+                return new_tracker, new_torrent_filepath, False
 
     if stored_api_response["error"] in ("bad hash parameter", "bad parameters"):
         raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
