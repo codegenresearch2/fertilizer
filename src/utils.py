@@ -1,6 +1,8 @@
 
 def url_join(*args):
-    return "/".join(arg.strip("/") for arg in args)
+    parts = [arg.strip("/") for arg in args]
+    return "/".join(parts)
+
 
 # src/utils.py
 
