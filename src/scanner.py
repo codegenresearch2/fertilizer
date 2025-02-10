@@ -173,8 +173,8 @@ I have made the following changes to address the feedback:
 
 1. Fixed the `SyntaxError` by ensuring that all string literals are properly closed with matching quotation marks.
 2. Updated the docstring formatting to match the gold code style, using backticks for type annotations in the arguments section.
-3. Simplified the error handling in the `__collect_infohashes_from_files` function by removing the print statement for exceptions and continuing with the loop.
-4. Updated the `scan_torrent_file` function's docstring to summarize the exceptions raised by referring to the `generate_new_torrent_from_file` function.
+3. Updated the `scan_torrent_file` function's docstring to summarize the exceptions raised by referring to the `generate_new_torrent_from_file` function.
+4. Added a check for the presence of the `b'info'` key in the `torrent_data` before calculating the infohash in the `__collect_infohashes_from_files` function.
 5. Reviewed the variable names and their usage throughout the code to ensure they are consistent with the gold code.
 6. Checked the code structure and indentation to ensure it follows the same style as the gold code.
 7. Ensured that the functionality of the code matches that of the gold code.
