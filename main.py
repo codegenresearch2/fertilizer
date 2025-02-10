@@ -28,9 +28,10 @@ def cli_entrypoint(args):
     try:
         config = Config().load(args.config_file)
         red_api, ops_api = __verify_api_keys(config)
+        port = config.get("webserver_port", os.environ.get("PORT", 9713))
 
         if args.server:
-            run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
+            run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=port)
         elif args.input_file:
             print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
         elif args.input_directory:
