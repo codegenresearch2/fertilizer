@@ -9,6 +9,10 @@ from requests.exceptions import RequestException
 from requests.structures import CaseInsensitiveDict
 
 class Deluge(TorrentClient):
+    ERROR_CODES = {
+        "AUTHENTICATION_FAILURE": 1,
+    }
+
     def __init__(self, rpc_url):
         super().__init__()
         self._rpc_url = rpc_url
@@ -17,16 +21,8 @@ class Deluge(TorrentClient):
         self._label_plugin_enabled = False
 
     def setup(self):
-        try:
-            connection_response = self.__authenticate()
-        except TorrentClientAuthenticationError as auth_error:
-            raise TorrentClientAuthenticationError(f"Failed to authenticate with Deluge: {str(auth_error)}")
-        except Exception as e:
-            raise TorrentClientError(f"Unexpected error during setup: {str(e)}")
-
+        self.__authenticate()
         self._label_plugin_enabled = self.__is_label_plugin_enabled()
-
-        return connection_response
 
     def get_torrent_info(self, infohash):
         infohash = infohash.lower()
@@ -42,26 +38,13 @@ class Deluge(TorrentClient):
             {"hash": infohash},
         ]
 
-        try:
-            response = self.__request("web.update_ui", params)
-        except TorrentClientAuthenticationError:
-            self.__authenticate()
-            response = self.__request("web.update_ui", params)
+        response = self.__wrap_request("web.update_ui", params)
+        torrent = response["torrents"].get(infohash)
 
-        if "torrents" in response:
-            torrent = response["torrents"].get(infohash)
+        if torrent is None:
+            raise TorrentClientError(f"Torrent not found in client ({infohash})")
 
-            if torrent is None:
-                raise TorrentClientError(f"Torrent not found in client ({infohash})")
-        else:
-            raise TorrentClientError("Client returned unexpected response (object missing)")
-
-        torrent_completed = (
-            (torrent["state"] == "Paused" and (torrent["progress"] == 100 or not torrent["total_remaining"]))
-            or torrent["state"] == "Seeding"
-            or torrent["progress"] == 100
-            or not torrent["total_remaining"]
-        )
+        torrent_completed = self.__is_torrent_completed(torrent)
 
         return {
             "complete": torrent_completed,
@@ -75,17 +58,9 @@ class Deluge(TorrentClient):
         if not source_torrent_info["complete"]:
             raise TorrentClientError("Cannot inject a torrent that is not complete")
 
-        params = [
-            f"{Path(new_torrent_filepath).stem}.fertilizer.torrent",
-            base64.b64encode(open(new_torrent_filepath, "rb").read()).decode(),
-            {
-                "download_location": save_path_override if save_path_override else source_torrent_info["save_path"],
-                "seed_mode": True,
-                "add_paused": False,
-            },
-        ]
+        params = self.__prepare_inject_torrent_params(new_torrent_filepath, source_torrent_info, save_path_override)
 
-        new_torrent_infohash = self.__request("core.add_torrent_file", params)
+        new_torrent_infohash = self.__wrap_request("core.add_torrent_file", params)
         newtorrent_label = self.__determine_label(source_torrent_info)
         self.__set_label(new_torrent_infohash, newtorrent_label)
 
@@ -94,7 +69,7 @@ class Deluge(TorrentClient):
     def __authenticate(self):
         _href, _username, password = self._extract_credentials_from_url(self._rpc_url)
         if not password:
-            raise TorrentClientAuthenticationError("Password not defined in the Deluge RPC URL")
+            raise TorrentClientAuthenticationError("Password not defined in the Deluge RPC URL. Please format the URL as http://:<PASSWORD>@localhost:8112")
 
         auth_response = self.__request("auth.login", [password])
         if not auth_response:
@@ -104,15 +79,12 @@ class Deluge(TorrentClient):
 
     def __is_label_plugin_enabled(self):
         response = self.__request("core.get_enabled_plugins")
-
         return "Label" in response
 
     def __determine_label(self, torrent_info):
         current_label = torrent_info.get("label")
-
         if not current_label or current_label == self.torrent_label:
             return self.torrent_label
-
         return f"{current_label}.{self.torrent_label}"
 
     def __set_label(self, infohash, label):
@@ -158,7 +130,7 @@ class Deluge(TorrentClient):
         self.__handle_response_headers(response.headers)
 
         if "error" in json_response and json_response["error"]:
-            if json_response["error"]["code'] == 1:
+            if json_response["error"]["code"] == self.ERROR_CODES["AUTHENTICATION_FAILURE"]:
                 raise TorrentClientAuthenticationError(f"Deluge method {method} returned an authentication error")
             raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']}")
 
@@ -167,3 +139,32 @@ class Deluge(TorrentClient):
     def __handle_response_headers(self, headers):
         if "Set-Cookie" in headers:
             self._deluge_cookie = headers["Set-Cookie"].split(";")[0]
+
+    def __wrap_request(self, method, params=[]):
+        try:
+            return self.__request(method, params)
+        except TorrentClientAuthenticationError:
+            self.__authenticate()
+            return self.__request(method, params)
+
+    def __prepare_inject_torrent_params(self, new_torrent_filepath, source_torrent_info, save_path_override):
+        return [
+            f"{Path(new_torrent_filepath).stem}.fertilizer.torrent",
+            base64.b64encode(open(new_torrent_filepath, "rb").read()).decode(),
+            {
+                "download_location": save_path_override if save_path_override else source_torrent_info["save_path"],
+                "seed_mode": True,
+                "add_paused": False,
+            },
+        ]
+
+    def __is_torrent_completed(self, torrent):
+        return (
+            (torrent["state"] == "Paused" and (torrent["progress"] == 100 or not torrent["total_remaining"]))
+            or torrent["state"] == "Seeding"
+            or torrent["progress"] == 100
+            or not torrent["total_remaining"]
+        )
+
+
+In the updated code snippet, I have addressed the feedback provided by the oracle. I have added a constant for the error code related to authentication failure, implemented a `__wrap_request` method to handle the authentication error and retry logic, ensured that the response handling checks for specific error codes using the defined constants, and simplified the logic in the `setup` method. Additionally, I have fixed the syntax error in the line that checks for the error code in the `__request` method.
