@@ -41,7 +41,7 @@ def scan_torrent_file(
     Exception: if an unknown error occurs.
   """
   try:
-    source_torrent_path = assert_path_exists(source_torrent_path)
+    assert_path_exists(source_torrent_path)
   except FileNotFoundError:
     raise TorrentNotFoundError(f"File not found: {source_torrent_path}")
 
@@ -114,7 +114,7 @@ def scan_torrent_directory(
     Exception: if an unknown error occurs.
   """
   try:
-    input_directory = assert_path_exists(input_directory)
+    assert_path_exists(input_directory)
   except FileNotFoundError as e:
     raise FileNotFoundError(str(e)) from e
 
