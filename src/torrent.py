@@ -37,7 +37,7 @@ def generate_new_torrent_from_file(
     representing whether the torrent already existed (False: created just now, True: torrent file already existed).
   Raises:
     `TorrentDecodingError`: if the original torrent file could not be decoded.
-    `UnknownTrackerError`: if the original torrent file is not from OPS or RED.
+    `UnknownTrackerError`: if the original torrent file is not from OPS or RED based on source or announce URL.
     `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.
     `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
     `Exception`: if an unknown error occurs.
@@ -73,43 +73,28 @@ def generate_new_torrent_from_file(
     return (new_tracker, output_infohashes[found_output_hash], True)
 
   for new_source in new_tracker.source_flags_for_creation():
-    try:
-      new_hash = recalculate_hash_for_new_source(torrent_data, new_source)
-    except Exception as e:
-      raise Exception(f"Error recalculating hash for new source: {e}")
-
-    try:
-      stored_api_response = new_tracker_api.find_torrent(new_hash)
-    except Exception as e:
-      raise Exception(f"Error finding torrent on reciprocal tracker: {e}")
+    if not isinstance(new_source, bytes):
+      new_source = new_source.encode()
+    new_hash = recalculate_hash_for_new_source(torrent_data, new_source.decode())
+    stored_api_response = new_tracker_api.find_torrent(new_hash)
 
     if stored_api_response["status"] == "success":
-      try:
-        new_torrent_filepath = __generate_torrent_output_filepath(
-          stored_api_response,
-          new_tracker,
-          new_source.decode("utf-8"),
-          output_directory,
-        )
-      except Exception as e:
-        raise Exception(f"Error generating torrent output filepath: {e}")
+      new_torrent_filepath = __generate_torrent_output_filepath(
+        stored_api_response,
+        new_tracker,
+        new_source.decode(),
+        output_directory,
+      )
 
       if os.path.exists(new_torrent_filepath):
         return (new_tracker, new_torrent_filepath, True)
 
       if new_torrent_filepath:
-        try:
-          torrent_id = __get_torrent_id(stored_api_response)
-        except Exception as e:
-          raise Exception(f"Error getting torrent ID: {e}")
-
-        try:
-          new_torrent_data[b"info"][b"source"] = new_source.encode()  # Ensure bytes
-          new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
-          new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
-          save_bencoded_data(new_torrent_filepath, new_torrent_data)
-        except Exception as e:
-          raise Exception(f"Error saving bencoded data: {e}")
+        torrent_id = __get_torrent_id(stored_api_response)
+        new_torrent_data[b"info"][b"source"] = new_source
+        new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
+        new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
+        save_bencoded_data(new_torrent_filepath, new_torrent_data)
 
         return (new_tracker, new_torrent_filepath, False)
 
