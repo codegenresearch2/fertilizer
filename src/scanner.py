@@ -40,21 +40,14 @@ def scan_torrent_file(
         `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.
         `Exception`: if an unknown error occurs.
     """
-    try:
-        assert_path_exists(source_torrent_path)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"The torrent file at {source_torrent_path} does not exist.")
-
+    assert_path_exists(source_torrent_path)
     output_directory = mkdir_p(output_directory)
 
-    try:
-        output_torrents = list_files_of_extension(output_directory, ".torrent")
-        output_infohashes = __collect_infohashes_from_files(output_torrents)
-    except TorrentDecodingError as e:
-        raise TorrentDecodingError(str(e))
+    output_torrents = list_files_of_extension(output_directory, ".torrent")
+    output_infohashes = __collect_infohashes_from_files(output_torrents)
 
     try:
-        new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
+        new_tracker, new_torrent_filepath, was_previously_generated = generate_new_torrent_from_file(
             source_torrent_path,
             output_directory,
             red_api,
@@ -73,7 +66,7 @@ def scan_torrent_file(
     except Exception as e:
         raise Exception(str(e))
 
-    if injector:
+    if injector and not was_previously_generated:
         try:
             injector.inject_torrent(
                 source_torrent_path,
@@ -112,20 +105,13 @@ def scan_torrent_directory(
         `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
         `Exception`: if an unknown error occurs.
     """
-    try:
-        input_directory = assert_path_exists(input_directory)
-    except FileNotFoundError as e:
-        raise FileNotFoundError(str(e))
-
+    assert_path_exists(input_directory)
     output_directory = mkdir_p(output_directory)
 
-    try:
-        input_torrents = list_files_of_extension(input_directory, ".torrent")
-        output_torrents = list_files_of_extension(output_directory, ".torrent")
-        input_infohashes = __collect_infohashes_from_files(input_torrents)
-        output_infohashes = __collect_infohashes_from_files(output_torrents)
-    except TorrentDecodingError as e:
-        raise TorrentDecodingError(str(e))
+    input_torrents = list_files_of_extension(input_directory, ".torrent")
+    output_torrents = list_files_of_extension(output_directory, ".torrent")
+    input_infohashes = __collect_infohashes_from_files(input_torrents)
+    output_infohashes = __collect_infohashes_from_files(output_torrents)
 
     p = Progress(len(input_torrents))
 
