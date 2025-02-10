@@ -8,7 +8,36 @@ from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundEr
 from .filesystem import replace_extension
 from .parser import get_bencoded_data, get_origin_tracker, recalculate_hash_for_new_source, save_bencoded_data
 
-def generate_new_torrent_from_file(source_torrent_path: str, output_directory: str, red_api: RedAPI, ops_api: OpsAPI, input_infohashes: dict = {}, output_infohashes: dict = {}) -> tuple[OpsTracker | RedTracker, str, bool]:
+def generate_new_torrent_from_file(
+    source_torrent_path: str,
+    output_directory: str,
+    red_api: RedAPI,
+    ops_api: OpsAPI,
+    input_infohashes: dict = {},
+    output_infohashes: dict = {}
+) -> tuple[OpsTracker | RedTracker, str, bool]:
+    """
+    Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
+
+    Args:
+        source_torrent_path (str): The path to the original torrent file.
+        output_directory (str): The directory to save the new torrent file.
+        red_api (RedApi): The pre-configured API object for RED.
+        ops_api (OpsApi): The pre-configured API object for OPS.
+        input_infohashes (dict, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
+        output_infohashes (dict, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
+
+    Returns:
+        A tuple containing the new tracker class (RedTracker or OpsTracker), the path to the new torrent file, and a boolean
+        representing whether the torrent already existed (False: created just now, True: torrent file already existed).
+
+    Raises:
+        TorrentDecodingError: if the original torrent file could not be decoded.
+        UnknownTrackerError: if the original torrent file is not from OPS or RED.
+        TorrentNotFoundError: if the original torrent file could not be found on the reciprocal tracker.
+        TorrentAlreadyExistsError: if the new torrent file already exists in the input or output directory.
+        Exception: if an unknown error occurs.
+    """
     source_torrent_data, source_tracker = __get_bencoded_data_and_tracker(source_torrent_path)
     new_torrent_data = copy.deepcopy(source_torrent_data)
     new_tracker = source_tracker.reciprocal_tracker()
@@ -79,6 +108,10 @@ def __get_bencoded_data_and_tracker(torrent_path: str):
 
     if not source_torrent_data:
         raise TorrentDecodingError("Error decoding torrent file")
+
+    # Check for the presence of the "info" section
+    if "info" not in source_torrent_data:
+        raise TorrentDecodingError("Torrent file does not contain the 'info' section")
 
     torrent_tracker = get_origin_tracker(source_torrent_data)
     fastresume_tracker = get_origin_tracker(fastresume_data) if fastresume_data else None
