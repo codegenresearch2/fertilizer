@@ -18,7 +18,7 @@ def cli_entrypoint(args):
                 output_directory=args.output_directory,
                 red_api=red_api,
                 ops_api=ops_api,
-                port=args.server_port
+                port=config.server_port
             )
         elif args.input_file:
             print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
