@@ -12,15 +12,15 @@ from .torrent_client import TorrentClient
 class Qbittorrent(TorrentClient):
     def __init__(self, qbit_url):
         super().__init__()
-        self._qbit_url, self._username, self._password = self._extract_credentials_from_url(qbit_url)
+        self._qbit_url, self._username, self._password = self._extract_credentials_from_url(qbit_url, "/api/v2")
         self._qbit_cookie = None
 
     def setup(self):
-        self.__authenticate()
+        self._authenticate()
         return self
 
     def get_torrent_info(self, infohash):
-        response = self.__request("torrents/info", data={"hashes": infohash})
+        response = self._request("torrents/info", data={"hashes": infohash})
         if response is None:
             raise TorrentClientError("Client returned unexpected response")
 
@@ -42,7 +42,7 @@ class Qbittorrent(TorrentClient):
         source_torrent_info = self.get_torrent_info(source_torrent_infohash)
         new_torrent_infohash = calculate_infohash(get_bencoded_data(new_torrent_filepath)).lower()
 
-        if self.__does_torrent_exist_in_client(new_torrent_infohash):
+        if self._does_torrent_exist_in_client(new_torrent_infohash):
             raise TorrentExistsInClientError(f"New torrent already exists in client ({new_torrent_infohash})")
 
         injection_filename = f"{Path(new_torrent_filepath).stem}.fertilizer.torrent"
@@ -54,15 +54,15 @@ class Qbittorrent(TorrentClient):
             "savepath": save_path_override if save_path_override else source_torrent_info["save_path"],
         }
 
-        self.__request("torrents/add", data=params, files=torrents)
+        self._request("torrents/add", data=params, files=torrents)
 
         return new_torrent_infohash
 
-    def __authenticate(self):
+    def _authenticate(self):
         payload = {"username": self._username, "password": self._password} if self._username or self._password else {}
 
         try:
-            response = requests.post(urljoin(self._qbit_url, "/api/v2/auth/login"), data=payload)
+            response = requests.post(urljoin(self._qbit_url, "auth/login"), data=payload)
             response.raise_for_status()
         except requests.RequestException as e:
             raise TorrentClientAuthenticationError(f"qBittorrent login failed: {e}")
@@ -71,11 +71,11 @@ class Qbittorrent(TorrentClient):
         if not self._qbit_cookie:
             raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
-    def __wrap_request(self, path, data=None, files=None):
+    def _request(self, path, data=None, files=None):
         try:
             return self.__perform_request(path, data, files)
         except TorrentClientAuthenticationError:
-            self.__authenticate()
+            self._authenticate()
             return self.__perform_request(path, data, files)
 
     def __perform_request(self, path, data=None, files=None):
@@ -92,11 +92,12 @@ class Qbittorrent(TorrentClient):
             return response.text
         except requests.RequestException as e:
             if e.response.status_code == 403:
+                print(e.response.text)
                 raise TorrentClientAuthenticationError("Failed to authenticate with qBittorrent")
 
             raise TorrentClientError(f"qBittorrent request to '{path}' failed: {e}")
 
-    def __does_torrent_exist_in_client(self, infohash):
+    def _does_torrent_exist_in_client(self, infohash):
         try:
             self.get_torrent_info(infohash)
             return True
