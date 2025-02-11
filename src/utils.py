@@ -1,4 +1,4 @@
-def join_urls(*args):
+def url_join(*parts):
     """
     Joins the provided URL parts into a single URL string.
     
@@ -7,13 +7,13 @@ def join_urls(*args):
     the parts before joining them.
     
     Args:
-        *args: Variable length argument list of URL parts to join.
+        *parts: Variable length argument list of URL parts to join.
     
     Returns:
         str: A single URL string formed by joining the provided parts.
     """
     # Normalize the parts by stripping leading and trailing slashes
-    normalized_parts = [str(arg).strip('/') for arg in args]
+    normalized_parts = [str(part).strip('/') for part in parts if part.strip('/')]
     
     # Join the normalized parts using a single slash
     return '/'.join(normalized_parts)
