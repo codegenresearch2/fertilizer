@@ -17,22 +17,22 @@ def is_valid_infohash(infohash: str) -> bool:
 
 def get_source(torrent_data: dict) -> bytes | None:
   try:
-    return torrent_data["info"]["source"]
+    return torrent_data[b'info'][b'source']
   except KeyError:
     return None
 
 def get_name(torrent_data: dict) -> bytes | None:
   try:
-    return torrent_data["info"]["name"]
+    return torrent_data[b'info'][b'name']
   except KeyError:
     return None
 
 def get_announce_url(torrent_data: dict) -> list[bytes] | None:
-  from_announce = torrent_data.get("announce")
+  from_announce = torrent_data.get(b'announce')
   if from_announce:
     return from_announce if isinstance(from_announce, list) else [from_announce]
 
-  from_trackers = torrent_data.get("trackers")
+  from_trackers = torrent_data.get(b'trackers')
   if from_trackers:
     return flatten(from_trackers)
 
@@ -52,13 +52,13 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
 
 def calculate_infohash(torrent_data: dict) -> str:
   try:
-    return sha1(bencoder.encode(torrent_data["info"])).hexdigest().upper()
+    return sha1(bencoder.encode(torrent_data[b'info'])).hexdigest().upper()
   except KeyError:
     raise TorrentDecodingError("Torrent data does not contain 'info' key")
 
-def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
+def recalculate_hash_for_new_source(torrent_data: dict, new_source: bytes | str) -> str:
   torrent_data = copy.deepcopy(torrent_data)
-  torrent_data["info"]["source"] = new_source
+  torrent_data[b'info'][b'source'] = new_source
 
   return calculate_infohash(torrent_data)
 
@@ -66,9 +66,11 @@ def get_bencoded_data(filename: str) -> dict:
   try:
     with open(filename, 'rb') as f:
       data = bencoder.decode(f.read())
+    if 'info' not in data:
+      raise TorrentDecodingError("Torrent data does not contain 'info' key")
     return data
-  except FileNotFoundError:
-    return None
+  except Exception as e:
+    raise TorrentDecodingError(f"Error decoding torrent file: {str(e)}")
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
   parent_dir = os.path.dirname(filepath)
