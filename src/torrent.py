@@ -15,8 +15,8 @@ def generate_new_torrent_from_file(source_torrent_path: str, output_directory: s
     Args:
         source_torrent_path (str): The path to the original torrent file.
         output_directory (str): The directory to save the new torrent file.
-        red_api (RedApi): The pre-configured API object for RED.
-        ops_api (OpsApi): The pre-configured API object for OPS.
+        red_api (RedAPI): The pre-configured API object for RED.
+        ops_api (OpsAPI): The pre-configured API object for OPS.
         input_infohashes (dict, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
         output_infohashes (dict, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
 
@@ -31,6 +31,9 @@ def generate_new_torrent_from_file(source_torrent_path: str, output_directory: s
         TorrentAlreadyExistsError: if the new torrent file already exists in the input or output directory.
         Exception: if an unknown error occurs.
     """
+    if not os.path.exists(source_torrent_path):
+        raise FileNotFoundError(f"The source torrent file '{source_torrent_path}' does not exist.")
+
     source_torrent_data, source_tracker = __get_bencoded_data_and_tracker(source_torrent_path)
     new_torrent_data = copy.deepcopy(source_torrent_data)
     new_tracker = source_tracker.reciprocal_tracker()
@@ -50,7 +53,7 @@ def generate_new_torrent_from_file(source_torrent_path: str, output_directory: s
         new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
         stored_api_response = new_tracker_api.find_torrent(new_hash)
 
-        if stored_api_response["status"] == "success":
+        if stored_api_response and stored_api_response["status"] == "success":
             new_torrent_filepath = __generate_torrent_output_filepath(stored_api_response, new_tracker, new_source.decode("utf-8"), output_directory)
 
             if os.path.exists(new_torrent_filepath):
@@ -66,8 +69,11 @@ def generate_new_torrent_from_file(source_torrent_path: str, output_directory: s
 
                 return new_tracker, new_torrent_filepath, False
 
-    if stored_api_response and "error" in stored_api_response and stored_api_response["error"] in ("bad hash parameter", "bad parameters"):
-        raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
+    if stored_api_response and "error" in stored_api_response:
+        if stored_api_response["error"] in ("bad hash parameter", "bad parameters"):
+            raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
+        else:
+            raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}: {stored_api_response['error']}")
 
     raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
 
@@ -97,7 +103,7 @@ def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
 def __get_bencoded_data_and_tracker(torrent_path: str):
     fastresume_path = replace_extension(torrent_path, ".fastresume")
     source_torrent_data = get_bencoded_data(torrent_path)
-    fastresume_data = get_bencoded_data(fastresume_path)
+    fastresume_data = get_bencoded_data(fastresume_path) if os.path.exists(fastresume_path) else None
 
     if not source_torrent_data or "info" not in source_torrent_data:
         raise TorrentDecodingError("Error decoding torrent file")
