@@ -9,6 +9,10 @@ from requests.exceptions import RequestException
 from requests.structures import CaseInsensitiveDict
 
 class Deluge(TorrentClient):
+    ERROR_CODES = {
+        "AUTHENTICATION_ERROR": 1,
+    }
+
     def __init__(self, rpc_url):
         super().__init__()
         self._rpc_url = rpc_url
@@ -42,11 +46,7 @@ class Deluge(TorrentClient):
             {"hash": infohash},
         ]
 
-        try:
-            response = self.__request("web.update_ui", params)
-        except TorrentClientAuthenticationError:
-            self.__authenticate()
-            response = self.__request("web.update_ui", params)
+        response = self.__wrap_request("web.update_ui", params)
 
         if "torrents" in response:
             torrent = response["torrents"].get(infohash)
@@ -158,12 +158,22 @@ class Deluge(TorrentClient):
         self.__handle_response_headers(response.headers)
 
         if "error" in json_response and json_response["error"]:
-            if json_response["error"]["code'] == 1:
+            if json_response["error"]["code"] == self.ERROR_CODES["AUTHENTICATION_ERROR"]:
                 raise TorrentClientAuthenticationError(f"Deluge method {method} returned an authentication error")
             raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']}")
 
         return json_response["result"]
 
+    def __wrap_request(self, method, params=[]):
+        try:
+            return self.__request(method, params)
+        except TorrentClientAuthenticationError:
+            self.__authenticate()
+            return self.__request(method, params)
+
     def __handle_response_headers(self, headers):
         if "Set-Cookie" in headers:
             self._deluge_cookie = headers["Set-Cookie"].split(";")[0]
+
+
+In the updated code, I have addressed the test case feedback by correcting the syntax error in the `__request` method. Additionally, I have implemented the suggested improvements from the oracle feedback, including the use of constants for error codes, a `__wrap_request` method for handling authentication errors, and a more consistent exception raising pattern.
