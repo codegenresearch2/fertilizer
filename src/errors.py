@@ -1,6 +1,5 @@
 import sys
 from time import sleep
-
 from colorama import Fore
 
 def handle_error(
@@ -42,7 +41,4 @@ class TorrentClientError(Exception):
   pass
 
 class TorrentInjectionError(Exception):
-  pass
-
-class TorrentClientAuthenticationError(Exception):
   pass
