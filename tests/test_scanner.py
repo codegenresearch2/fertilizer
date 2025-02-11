@@ -84,6 +84,16 @@ class TestScanTorrentFile(SetupTeardown):
 
       scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api, None)
 
+  def test_raises_error_if_torrent_has_no_info(self, red_api, ops_api):
+    with pytest.raises(TorrentDecodingError):
+      copy_and_mkdir(get_torrent_path("no_info"), "/tmp/input/no_info.torrent")
+
+      with requests_mock.Mocker() as m:
+        m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+        m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+        scan_torrent_file("/tmp/input/no_info.torrent", "/tmp/output", red_api, ops_api, None)
+
 class TestScanTorrentDirectory(SetupTeardown):
   def test_gets_mad_if_input_directory_does_not_exist(self, red_api, ops_api):
     with pytest.raises(FileNotFoundError):
@@ -278,14 +288,4 @@ class TestScanTorrentDirectory(SetupTeardown):
 
     with requests_mock.Mocker() as m:
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
-      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
-
-      scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, injector_mock)
-
-    injector_mock.inject_torrent.assert_called_once_with(
-      "/tmp/input/red_source.torrent", "/tmp/output/OPS/foo [OPS].torrent", "OPS"
-    )
-
-  def test_doesnt_blow_up_if_other_torrent_name_has_bad_encoding(self, red_api, ops_api):
-    copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
-    copy_and_mkdir(get_torrent_path("broken_name"), "/tmp/input
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESP
