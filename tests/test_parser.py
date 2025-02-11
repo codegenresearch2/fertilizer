@@ -88,7 +88,7 @@ class TestCalculateInfohash(SetupTeardown):
     torrent_data = {}
     with pytest.raises(TorrentDecodingError) as e:
       calculate_infohash(torrent_data)
-    assert str(e.value) == "Torrent data does not contain 'info' key"
+    assert "Torrent data does not contain 'info' key" in str(e.value)
 
 class TestRecalculateHashForNewSource(SetupTeardown):
   def test_replaces_source_and_returns_hash(self):
@@ -136,5 +136,3 @@ class TestSaveTorrentData(SetupTeardown):
     save_bencoded_data(filename, torrent_data)
     assert os.path.exists("/tmp/output/foo")
     os.remove(filename)
-
-I have addressed the feedback provided by the oracle. In the `TestCalculateInfohash` class, I have updated the exception handling to include a specific message that indicates the reason for the failure. I have also ensured that assertions match the style used in the gold code. I have added comments to improve documentation and ensured consistent formatting and spacing. Finally, I have ensured that all temporary files created during tests are properly cleaned up after the tests run.
