@@ -90,7 +90,7 @@ class Deluge(TorrentClient):
     def __authenticate(self):
         _href, _username, password = self._extract_credentials_from_url(self._rpc_url)
         if not password:
-            raise TorrentClientAuthenticationError("Password is missing in the Deluge RPC URL")
+            raise TorrentClientAuthenticationError("Password is missing in the Deluge RPC URL. Please format the URL as http://:<PASSWORD>@localhost:8112")
 
         auth_response = self.__request("auth.login", [password])
         if not auth_response:
