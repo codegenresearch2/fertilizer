@@ -124,8 +124,8 @@ def scan_torrent_directory(
         p.generated.print(
           f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
         )
-    except TorrentDecodingError:
-      p.error.print("Error decoding torrent file")
+    except TorrentDecodingError as e:
+      p.error.print(str(e))
       continue
     except UnknownTrackerError as e:
       p.skipped.print(str(e))
@@ -140,7 +140,7 @@ def scan_torrent_directory(
       p.not_found.print(str(e))
       continue
     except Exception as e:
-      p.error.print(f"An unknown error occurred: {e}")
+      p.error.print(str(e))
       continue
 
   return p.report()
