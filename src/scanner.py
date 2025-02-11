@@ -19,6 +19,7 @@ def scan_torrent_file(
     output_directory: str,
     red_api: RedAPI,
     ops_api: OpsAPI,
+    injector: Injection | None = None,
 ) -> str:
     """
     Scans a single .torrent file and generates a new one using the tracker API.
@@ -28,6 +29,7 @@ def scan_torrent_file(
         output_directory (str): The directory to save the new .torrent files.
         red_api (RedAPI): The pre-configured RED tracker API.
         ops_api (OpsAPI): The pre-configured OPS tracker API.
+        injector (Injection | None): The pre-configured torrent Injection object. Defaults to None.
 
     Returns:
         str: The path to the new .torrent file.
@@ -55,6 +57,13 @@ def scan_torrent_file(
             output_infohashes=output_infohashes,
         )
 
+        if injector:
+            injector.inject_torrent(
+                source_torrent_path,
+                new_torrent_filepath,
+                new_tracker.site_shortname(),
+            )
+
         return new_torrent_filepath
     except TorrentDecodingError as e:
         raise TorrentDecodingError(str(e)) from e
@@ -75,6 +84,7 @@ def scan_torrent_directory(
     output_directory: str,
     red_api: RedAPI,
     ops_api: OpsAPI,
+    injector: Injection | None = None,
 ) -> str:
     """
     Scans a directory for .torrent files and generates new ones using the tracker APIs.
@@ -84,6 +94,7 @@ def scan_torrent_directory(
         output_directory (str): The directory to save the new .torrent files.
         red_api (RedAPI): The pre-configured RED tracker API.
         ops_api (OpsAPI): The pre-configured OPS tracker API.
+        injector (Injection | None): The pre-configured torrent Injection object. Defaults to None.
 
     Returns:
         str: A report of the scan.
@@ -113,6 +124,13 @@ def scan_torrent_directory(
                 input_infohashes=input_infohashes,
                 output_infohashes=output_infohashes,
             )
+
+            if injector:
+                injector.inject_torrent(
+                    source_torrent_path,
+                    new_torrent_filepath,
+                    new_tracker.site_shortname(),
+                )
 
             if was_previously_generated:
                 p.already_exists.print("Torrent was previously generated.")
