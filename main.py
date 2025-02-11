@@ -23,11 +23,12 @@ def cli_entrypoint(args):
         exit(1)
 
 def __verify_api_keys(config):
-    # Verify API keys and cache the announce URL for future use
+    # Initialize API objects with provided keys
     red_api = RedAPI(config.red_key)
     ops_api = OpsAPI(config.ops_key)
 
     try:
+        # Perform a lookup with the API to validate keys and cache the announce URL for future use
         red_api.announce_url
         ops_api.announce_url
     except Exception as e:
