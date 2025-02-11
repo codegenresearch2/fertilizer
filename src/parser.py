@@ -1,12 +1,16 @@
 import os
 import copy
+import shutil
 import bencoder
 from hashlib import sha1
 
 from .utils import flatten
 from .trackers import RedTracker, OpsTracker
-from .errors import TorrentDecodingError
 
+def copy_and_mkdir(src, dst):
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copy2(src, dst)
+    return dst
 
 def is_valid_infohash(infohash: str) -> bool:
   if not isinstance(infohash, str) or len(infohash) != 40:
@@ -16,20 +20,17 @@ def is_valid_infohash(infohash: str) -> bool:
   except ValueError:
     return False
 
-
 def get_source(torrent_data: dict) -> bytes | None:
   try:
     return torrent_data[b"info"][b"source"]
   except KeyError:
     return None
 
-
 def get_name(torrent_data: dict) -> bytes | None:
   try:
     return torrent_data[b"info"][b"name"]
   except KeyError:
     return None
-
 
 def get_announce_url(torrent_data: dict) -> list[bytes] | None:
   from_announce = torrent_data.get(b"announce")
@@ -41,7 +42,6 @@ def get_announce_url(torrent_data: dict) -> list[bytes] | None:
     return flatten(from_trackers)
 
   return None
-
 
 def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
   source = get_source(torrent_data) or b""
@@ -55,13 +55,10 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
 
   return None
 
-
 def calculate_infohash(torrent_data: dict) -> str:
-  try:
-    return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
-  except KeyError:
-    raise TorrentDecodingError("Torrent data does not contain 'info' key")
-
+  if b"info" not in torrent_data:
+    raise ValueError("Torrent data does not contain 'info' key")
+  return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
 
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
   torrent_data = copy.deepcopy(torrent_data)
@@ -69,23 +66,20 @@ def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str
 
   return calculate_infohash(torrent_data)
 
-
 def get_bencoded_data(filename: str) -> dict:
   try:
     with open(filename, "rb") as f:
       data = bencoder.decode(f.read())
-
     return data
-  except Exception:
+  except Exception as e:
+    print(f"Error decoding torrent file: {e}")
     return None
 
-
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
-  parent_dir = os.path.dirname(filepath)
-  if parent_dir:
-    os.makedirs(parent_dir, exist_ok=True)
-
-  with open(filepath, "wb") as f:
-    f.write(bencoder.encode(torrent_data))
-
-  return filepath
+  try:
+    with open(filepath, "wb") as f:
+      f.write(bencoder.encode(torrent_data))
+    return copy_and_mkdir(filepath, filepath)
+  except Exception as e:
+    print(f"Error saving torrent file: {e}")
+    return None
