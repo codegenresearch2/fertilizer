@@ -29,3 +29,7 @@ class TestUrlJoin(SetupTeardown):
   def test_handles_leading_and_trailing_slashes(self):
     result = url_join('http://example.com/', '/path/')
     assert result == 'http://example.com/path'
+
+  def test_handles_full_uri_as_path(self):
+    result = url_join('http://example.com/', 'https://another.com/path')
+    assert result == 'https://another.com/path'
