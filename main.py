@@ -19,7 +19,7 @@ def cli_entrypoint(args):
         elif args.input_directory:
             print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
     except Exception as e:
-        print(f"{Fore.RED}{str(e)}{Fore.RESET}")
+        print(f"{Fore.RED}Error: {str(e)}{Fore.RESET}")
         exit(1)
 
 def __verify_api_keys(config):
@@ -27,13 +27,9 @@ def __verify_api_keys(config):
     red_api = RedAPI(config.red_key)
     ops_api = OpsAPI(config.ops_key)
 
-    try:
-        # Perform a lookup with the API to validate keys and cache the announce URL for future use
-        red_api.announce_url
-        ops_api.announce_url
-    except Exception as e:
-        print(f"{Fore.RED}Failed to verify API keys: {str(e)}{Fore.RESET}")
-        exit(1)
+    # Perform a lookup with the API to validate keys and cache the announce URL for future use
+    red_api.announce_url
+    ops_api.announce_url
 
     return red_api, ops_api
 
