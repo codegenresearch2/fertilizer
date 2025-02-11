@@ -83,9 +83,9 @@ class TestCalculateInfohash(SetupTeardown):
 
   def test_raises_if_no_info_key(self):
     torrent_data = {}
-    with pytest.raises(TorrentDecodingError) as e:
+    with pytest.raises(TorrentDecodingError) as excinfo:
       calculate_infohash(torrent_data)
-    assert str(e.value) == "Torrent data does not contain 'info' key"
+    assert str(excinfo.value) == "Torrent data does not contain 'info' key"
 
 class TestRecalculateHashForNewSource(SetupTeardown):
   def test_replaces_source_and_returns_hash(self):
