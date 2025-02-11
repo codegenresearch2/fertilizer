@@ -12,7 +12,7 @@ from .torrent_client import TorrentClient
 class Qbittorrent(TorrentClient):
     def __init__(self, qbit_url):
         super().__init__()
-        self._qbit_url_parts = self._extract_credentials_from_url(qbit_url)
+        self._qbit_url_parts = self._extract_credentials_from_url(qbit_url, "/api/v2")
         self._qbit_cookie = None
 
     def setup(self):
@@ -62,15 +62,16 @@ class Qbittorrent(TorrentClient):
         return new_torrent_infohash
 
     def __authenticate(self):
-        href, _, _ = self._qbit_url_parts
+        href, username, password = self._qbit_url_parts
 
         try:
-            response = requests.post(f"{href}/auth/login", data={})
+            payload = {"username": username, "password": password} if username or password else {}
+            response = requests.post(f"{href}/auth/login", data=payload)
             response.raise_for_status()
         except requests.RequestException as e:
             raise TorrentClientAuthenticationError(f"qBittorrent login failed: {e}")
 
-        self._qbit_cookie = response.cookies.get("SID")
+        self._qbit_cookie = response.cookies.get_dict().get("SID")
         if not self._qbit_cookie:
             raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
