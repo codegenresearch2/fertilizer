@@ -48,7 +48,7 @@ def scan_torrent_file(
     output_infohashes = __collect_infohashes_from_files(output_torrents)
 
     try:
-        new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
+        new_tracker, new_torrent_filepath, was_previously_generated = generate_new_torrent_from_file(
             source_torrent_path,
             output_directory,
             red_api,
@@ -57,7 +57,7 @@ def scan_torrent_file(
             output_infohashes=output_infohashes,
         )
 
-        if injector:
+        if injector and new_torrent_filepath:
             injector.inject_torrent(
                 source_torrent_path,
                 new_torrent_filepath,
@@ -125,7 +125,7 @@ def scan_torrent_directory(
                 output_infohashes=output_infohashes,
             )
 
-            if injector:
+            if injector and new_torrent_filepath:
                 injector.inject_torrent(
                     source_torrent_path,
                     new_torrent_filepath,
@@ -133,7 +133,12 @@ def scan_torrent_directory(
                 )
 
             if was_previously_generated:
-                p.already_exists.print("Torrent was previously generated.")
+                if injector and new_torrent_filepath:
+                    p.already_exists.print(
+                        "Torrent was previously generated and injected into your torrent client."
+                    )
+                else:
+                    p.already_exists.print("Torrent was previously generated.")
             else:
                 p.generated.print(
                     f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
