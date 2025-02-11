@@ -5,6 +5,16 @@ from src.config import Config
 from src.errors import ConfigKeyError
 
 
+class SetupTeardown:
+    def setup_method(self):
+        # Any setup code can go here
+        pass
+
+    def teardown_method(self):
+        # Any teardown code can go here
+        pass
+
+
 class TestConfig(SetupTeardown):
     def test_loads_config(self):
         config = Config().load("tests/support/settings.json")
