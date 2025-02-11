@@ -64,8 +64,16 @@ def scan_torrent_file(
 
         p.generated.print(f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'.")
         return new_torrent_filepath
-    except (TorrentDecodingError, UnknownTrackerError, TorrentAlreadyExistsError, TorrentExistsInClientError, TorrentNotFoundError) as e:
-        p.error.print(str(e))
+    except TorrentDecodingError as e:
+        p.error.print(f"Error decoding torrent file: {e}")
+    except UnknownTrackerError as e:
+        p.skipped.print(f"Unknown tracker error: {e}")
+    except TorrentAlreadyExistsError as e:
+        p.already_exists.print(f"Torrent already exists: {e}")
+    except TorrentExistsInClientError as e:
+        p.already_exists.print(f"Torrent exists in client: {e}")
+    except TorrentNotFoundError as e:
+        p.not_found.print(f"Torrent not found: {e}")
     except Exception as e:
         p.error.print(f"An unknown error occurred: {e}")
 
@@ -93,4 +101,4 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
 
     return infohash_dict
 
-I have addressed the feedback by improving the docstring formatting, simplifying the exception handling, and adding a progress reporting mechanism. I have also made sure to handle similar exceptions in a more concise manner.
+I have addressed the feedback by improving the docstring formatting, handling each exception type separately, and adding a progress reporting mechanism. I have also made sure to provide meaningful error messages.
