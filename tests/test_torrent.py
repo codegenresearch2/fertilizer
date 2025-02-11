@@ -199,3 +199,10 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
                 generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
 
         assert str(excinfo.value) == "An unknown error occurred in the API response from OPS"
+
+    def test_handles_torrent_with_no_info(self, red_api, ops_api):
+        with pytest.raises(TorrentDecodingError) as excinfo:
+            torrent_path = get_torrent_path("no_info")
+            generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+
+        assert str(excinfo.value) == "Error decoding torrent file"
