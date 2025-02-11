@@ -21,15 +21,15 @@ def generate_new_torrent_from_file(
   ops_api: OpsAPI,
   input_infohashes: dict = {},
   output_infohashes: dict = {},
-) -> tuple[OpsTracker | RedTracker, str]:
+) -> tuple[OpsTracker | RedTracker, str, bool]:
   """
   Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
 
   Args:
     `source_torrent_path` (`str`): The path to the original torrent file.
     `output_directory` (`str`): The directory to save the new torrent file.
-    `red_api` (`RedApi`): The pre-configured API object for RED.
-    `ops_api` (`OpsApi`): The pre-configured API object for OPS.
+    `red_api` (`RedAPI`): The pre-configured API object for RED.
+    `ops_api` (`OpsAPI`): The pre-configured API object for OPS.
     `input_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
     `output_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
   Returns:
@@ -42,7 +42,6 @@ def generate_new_torrent_from_file(
     `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
     `Exception`: if an unknown error occurs.
   """
-
   source_torrent_data, source_tracker = __get_bencoded_data_and_tracker(source_torrent_path)
   new_torrent_data = copy.deepcopy(source_torrent_data)
   new_tracker = source_tracker.reciprocal_tracker()
@@ -128,27 +127,17 @@ def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
 
 
 def __get_bencoded_data_and_tracker(torrent_path):
-  # The fastresume stuff is to support qBittorrent since it doesn't store
-  # announce URLs in the torrent file IFF we're taking the file from `BT_backup`.
-  #
-  # qbit stores that information in a sidecar file that has the exact same name
-  # as the torrent file but with a `.fastresume` extension instead. It's also stored
-  # in a list of lists called `trackers` in this `.fastresume` file instead of `announce`.
-  fastresume_path = replace_extension(torrent_path, ".fastresume")
   source_torrent_data = get_bencoded_data(torrent_path)
-  fastresume_data = get_bencoded_data(fastresume_path)
 
-  if not source_torrent_data or not source_torrent_data.get(b"info"):
+  if not source_torrent_data:
     raise TorrentDecodingError("Error decoding torrent file")
 
   torrent_tracker = get_origin_tracker(source_torrent_data)
-  fastresume_tracker = get_origin_tracker(fastresume_data) if fastresume_data else None
-  source_tracker = torrent_tracker or fastresume_tracker
 
-  if not source_tracker:
+  if not torrent_tracker:
     raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
 
-  return source_torrent_data, source_tracker
+  return source_torrent_data, torrent_tracker
 
 
 def __get_reciprocal_tracker_api(new_tracker, red_api, ops_api):
