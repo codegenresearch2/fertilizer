@@ -31,11 +31,8 @@ def get_announce_url(torrent_data: dict) -> list[bytes] | None:
     if from_announce:
         return from_announce if isinstance(from_announce, list) else [from_announce]
 
-    from_trackers = torrent_data.get(b"trackers")
-    if from_trackers:
-        return flatten([[item] for item in from_trackers if isinstance(item, bytes)])
-
-    return None
+    from_trackers = torrent_data.get(b"trackers", [])
+    return flatten([[item] for item in from_trackers if isinstance(item, bytes)])
 
 def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
     source = get_source(torrent_data)
@@ -72,8 +69,7 @@ def get_bencoded_data(filename: str) -> dict | None:
         return data
     except FileNotFoundError:
         return None
-    except Exception as e:
-        print(f"Error decoding torrent file: {e}")
+    except Exception:
         return None
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
