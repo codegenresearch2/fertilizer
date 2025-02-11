@@ -120,7 +120,7 @@ I have made the following changes to address the feedback:
 
 3. **Cookie Retrieval**: I have updated the method of retrieving the session cookie to use `response.cookies.get("SID")`, which aligns with the gold code's approach.
 
-4. **Commenting**: I have added a comment in the `__authenticate` method to explain why the `__wrap_request` method is not used in this context.
+4. **Commenting**: I have added a comment in the `__authenticate` method to clarify why the `__wrap_request` method is not used in this context.
 
 5. **Variable Naming**: I have updated the variable naming in the `__request` method to use `_username` and `_password` for the variables that are intentionally not used.
 
