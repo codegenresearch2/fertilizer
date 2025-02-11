@@ -8,7 +8,14 @@ from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundEr
 from .filesystem import replace_extension
 from .parser import get_bencoded_data, get_origin_tracker, recalculate_hash_for_new_source, save_bencoded_data
 
-def generate_new_torrent_from_file(source_torrent_path: str, output_directory: str, red_api: RedAPI, ops_api: OpsAPI, input_infohashes: dict = {}, output_infohashes: dict = {}) -> tuple[OpsTracker | RedTracker, str, bool]:
+def generate_new_torrent_from_file(
+    source_torrent_path: str,
+    output_directory: str,
+    red_api: RedAPI,
+    ops_api: OpsAPI,
+    input_infohashes: dict = {},
+    output_infohashes: dict = {},
+) -> tuple[OpsTracker | RedTracker, str, bool]:
     """
     Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
 
@@ -54,10 +61,15 @@ def generate_new_torrent_from_file(source_torrent_path: str, output_directory: s
         stored_api_response = new_tracker_api.find_torrent(new_hash)
 
         if stored_api_response and stored_api_response["status"] == "success":
-            new_torrent_filepath = __generate_torrent_output_filepath(stored_api_response, new_tracker, new_source.decode("utf-8"), output_directory)
+            new_torrent_filepath = __generate_torrent_output_filepath(
+                stored_api_response,
+                new_tracker,
+                new_source.decode("utf-8"),
+                output_directory,
+            )
 
             if os.path.exists(new_torrent_filepath):
-                return new_tracker, new_torrent_filepath, True
+                raise TorrentAlreadyExistsError(f"Torrent already exists at {new_torrent_filepath}")
 
             if new_torrent_filepath:
                 torrent_id = __get_torrent_id(stored_api_response)
@@ -86,7 +98,12 @@ def __check_matching_hashes(all_possible_hashes: list[str], infohashes: dict) ->
             return hash
     return None
 
-def __generate_torrent_output_filepath(api_response: dict, new_tracker: OpsTracker | RedTracker, new_source: str, output_directory: str) -> str:
+def __generate_torrent_output_filepath(
+    api_response: dict,
+    new_tracker: OpsTracker | RedTracker,
+    new_source: str,
+    output_directory: str,
+) -> str:
     tracker_name = new_tracker.site_shortname()
     source_name = f" [{new_source}]" if new_source else ""
     filepath_from_api_response = unescape(api_response["response"]["torrent"]["filePath"])
