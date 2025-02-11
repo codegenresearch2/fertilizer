@@ -37,7 +37,7 @@ def generate_new_torrent_from_file(
     representing whether the torrent already existed (False: created just now, True: torrent file already existed).
   Raises:
     `TorrentDecodingError`: if the original torrent file could not be decoded.
-    `UnknownTrackerError`: if the original torrent file is not from OPS or RED.
+    `UnknownTrackerError`: if the original torrent file is not from OPS or RED based on source or announce URL.
     `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.
     `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
     `Exception`: if an unknown error occurs.
