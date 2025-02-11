@@ -9,7 +9,7 @@ from colorama import Fore
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
-from src.errors import TorrentExistsInClientError
+from src.errors import TorrentExistsInClientError, TorrentDecodingError
 from src.scanner import scan_torrent_directory, scan_torrent_file
 
 class TestScanTorrentFile(SetupTeardown):
@@ -275,4 +275,4 @@ class TestScanTorrentDirectory(SetupTeardown):
 
   def test_handle_bad_encoding_in_other_torrent_name(self, red_api, ops_api):
     copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
-    copy_and_mkdir(get_torrent_path("broken_name"), "/tmp/input/broken_name
+    copy_and_mkdir(get_torrent_path("broken_name"), "/tmp/
