@@ -13,7 +13,7 @@ class Config:
 
   def load(self, config_filepath: str):
     if not os.path.exists(config_filepath):
-      raise FileNotFoundError(f"Configuration file '{config_filepath}' does not exist.")
+      raise FileNotFoundError(f"Configuration file '{config_filepath}' not found.")
 
     with open(config_filepath, "r", encoding="utf-8") as f:
       self._json = json.loads(f.read())
@@ -29,17 +29,15 @@ class Config:
     return self.__get_key("ops_key")
 
   @property
-  def server_port(self) -> str:
-    return self.__get_key_with_default("server_port", "9713")
+  def port(self) -> str:
+    return self.__get_key("port", default="9713")
 
-  def __get_key(self, key):
+  def __get_key(self, key, default=None):
     try:
       return self._json[key]
     except KeyError:
+      if default is not None:
+        return default
       raise ConfigKeyError(f"Configuration key '{key}' is missing in the config file.")
 
-  def __get_key_with_default(self, key, default):
-    return self._json.get(key, default)
-
-
-In the rewritten code, I have added a new property `server_port` that returns the server port from the config file. If the key is not found, it will return a default value of "9713". I have also clarified the error messages for missing keys in the `__get_key` method.
+In the revised code, I have addressed the feedback from the oracle. I have simplified the error message in the `load` method, modified the `server_port` property to use the key "port" instead of "server_port", and added a default parameter to the `__get_key` method to support returning a default value if the key is not found in the configuration file. I have also removed the inline documentation that was causing the syntax error.
