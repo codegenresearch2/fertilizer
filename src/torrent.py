@@ -30,8 +30,8 @@ def generate_new_torrent_from_file(
   Args:
     source_torrent_path (str): The path to the original torrent file.
     output_directory (str): The directory to save the new torrent file.
-    red_api (RedApi): The pre-configured API object for RED.
-    ops_api (OpsApi): The pre-configured API object for OPS.
+    red_api (RedAPI): The pre-configured API object for RED.
+    ops_api (OpsAPI): The pre-configured API object for OPS.
     input_infohashes (dict, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
     output_infohashes (dict, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
 
@@ -50,6 +50,7 @@ def generate_new_torrent_from_file(
   new_tracker = source_tracker.reciprocal_tracker()
   new_tracker_api = __get_reciprocal_tracker_api(new_tracker, red_api, ops_api)
 
+  stored_api_response = None
   for new_source in new_tracker.source_flags_for_creation():
     new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
 
@@ -76,10 +77,11 @@ def generate_new_torrent_from_file(
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
 
         return (new_tracker, save_bencoded_data(new_torrent_filepath, new_torrent_data))
-    elif stored_api_response["error"] in ("bad hash parameter", "bad parameters"):
-      raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
-    else:
-      raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
+
+  if stored_api_response and stored_api_response["error"] in ("bad hash parameter", "bad parameters"):
+    raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
+  elif stored_api_response and stored_api_response["error"]:
+    raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
 
 def __generate_torrent_output_filepath(api_response: dict, new_source: str, output_directory: str, tracker: OpsTracker | RedTracker) -> str:
   """
@@ -98,7 +100,7 @@ def __generate_torrent_output_filepath(api_response: dict, new_source: str, outp
     TorrentAlreadyExistsError: if the new torrent file already exists in the output directory.
   """
   filepath_from_api_response = unescape(api_response["response"]["torrent"]["filePath"])
-  filename = f"{filepath_from_api_response} [{new_source}].torrent"
+  filename = f"{filepath_from_api_response} {f'[{new_source}]' if new_source else ''}.torrent"
   torrent_filepath = os.path.join(output_directory, tracker.site_shortname(), filename)
 
   if os.path.isfile(torrent_filepath):
@@ -167,10 +169,10 @@ def __get_reciprocal_tracker_api(new_tracker, red_api, ops_api):
 
   Args:
     new_tracker (OpsTracker | RedTracker): The tracker class for the new torrent file.
-    red_api (RedApi): The pre-configured API object for RED.
-    ops_api (OpsApi): The pre-configured API object for OPS.
+    red_api (RedAPI): The pre-configured API object for RED.
+    ops_api (OpsAPI): The pre-configured API object for OPS.
 
   Returns:
-    RedApi | OpsApi: The API object for the reciprocal tracker.
+    RedAPI | OpsAPI: The API object for the reciprocal tracker.
   """
   return red_api if new_tracker == RedTracker else ops_api
