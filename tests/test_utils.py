@@ -5,6 +5,8 @@ def url_join(*args):
     paths = []
     for arg in args:
         if arg.startswith('http://') or arg.startswith('https://'):
+            if base_url:
+                return arg
             base_url = arg.rstrip('/')
         else:
             paths.append(arg.strip('/'))
