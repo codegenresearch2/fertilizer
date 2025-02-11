@@ -29,7 +29,7 @@ class Config:
 
   @property
   def server_port(self) -> str:
-    return self._json.get("server_port", "9713")
+    return self.__get_key("server_port", "9713")
 
   def __get_key(self, key, default=None):
     try:
