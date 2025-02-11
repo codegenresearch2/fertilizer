@@ -12,18 +12,18 @@ def cli_entrypoint(args):
         config = Config().load(args.config_file)
         red_api, ops_api = __verify_api_keys(config)
 
-        if config.server:
+        if args.server:
             run_webserver(
-                input_directory=config.input_directory,
-                output_directory=config.output_directory,
+                input_directory=args.input_directory,
+                output_directory=args.output_directory,
                 red_api=red_api,
                 ops_api=ops_api,
-                port=config.server_port
+                port=args.server_port
             )
-        elif config.input_file:
-            print(scan_torrent_file(config.input_file, config.output_directory, red_api, ops_api))
-        elif config.input_directory:
-            print(scan_torrent_directory(config.input_directory, config.output_directory, red_api, ops_api))
+        elif args.input_file:
+            print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
+        elif args.input_directory:
+            print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
     except Exception as e:
         print(f"{Fore.RED}{str(e)}{Fore.RESET}")
         exit(1)
