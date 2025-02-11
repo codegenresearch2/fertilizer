@@ -4,22 +4,27 @@ from src.utils import url_join
 
 
 class TestUrlJoin(SetupTeardown):
-  def test_joins_urls(self):
-    url = url_join("http://example.com", "test", "file")
+  def test_joins_paths(self):
+    path = url_join("http://example.com", "test", "file")
 
-    assert url == "http://example.com/test/file"
+    assert path == "http://example.com/test/file"
 
-  def test_joins_urls_when_some_have_trailing_slash(self):
-    url = url_join("http://example.com/", "/test", "file")
+  def test_joins_paths_with_leading_slash(self):
+    path = url_join("http://example.com", "/test", "file")
 
-    assert url == "http://example.com/test/file"
+    assert path == "http://example.com/test/file"
 
-  def test_joins_urls_with_empty_parts(self):
-    url = url_join("http://example.com", "", "file")
+  def test_joins_paths_with_trailing_slash(self):
+    path = url_join("http://example.com/", "test", "file")
 
-    assert url == "http://example.com/file"
+    assert path == "http://example.com/test/file"
 
-  def test_joins_urls_with_none_parts(self):
-    url = url_join("http://example.com", None, "file")
+  def test_joins_paths_with_empty_parts(self):
+    path = url_join("http://example.com", "", "file")
 
-    assert url == "http://example.com/file"
+    assert path == "http://example.com/file"
+
+  def test_joins_paths_with_none_parts(self):
+    path = url_join("http://example.com", None, "file")
+
+    assert path == "http://example.com/file"
