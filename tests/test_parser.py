@@ -1,5 +1,5 @@
 import os
-from .helpers import get_torrent_path, SetupTeardown
+from src.errors import TorrentDecodingError
 from src.trackers import RedTracker, OpsTracker
 from src.parser import (
     is_valid_infohash,
@@ -12,6 +12,7 @@ from src.parser import (
     save_bencoded_data,
     calculate_infohash,
 )
+from src.helpers import get_torrent_path, SetupTeardown
 
 
 class TestIsValidInfohash(SetupTeardown):
@@ -87,6 +88,11 @@ class TestCalculateInfohash(SetupTeardown):
         result = calculate_infohash(torrent_data)
 
         assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
+
+    def test_raises_exception_if_info_key_missing(self):
+        torrent_data = {}
+        with self.assertRaises(TorrentDecodingError):
+            calculate_infohash(torrent_data)
 
 
 class TestRecalculateHashForNewSource(SetupTeardown):
