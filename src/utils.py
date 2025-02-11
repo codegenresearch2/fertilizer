@@ -1,4 +1,3 @@
-
 def url_join(*parts):
     """
     Joins the provided URL parts into a single URL string.
@@ -16,9 +15,7 @@ def url_join(*parts):
     from urllib.parse import urljoin
     
     # Normalize the parts by stripping leading and trailing slashes
-    normalized_parts = [part.strip('/') for part in parts]
+    normalized_parts = [part.strip('/') for part in parts if part.strip('/')]
     
     # Join the parts using urljoin to ensure proper URL formation
     return urljoin('/', '/'.join(normalized_parts))
-
-# Assuming the rest of the code in src/utils.py is correctly defined and does not cause any import issues.
