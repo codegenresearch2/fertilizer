@@ -30,3 +30,7 @@ class TestUrlJoin(SetupTeardown):
   def test_handles_empty_strings_with_leading_slash_in_subsequent_components(self):
     result = url_join('', '/v1', '/users')
     assert result == '/v1/users'
+
+  def test_handles_leading_and_trailing_slashes(self):
+    result = url_join('/api/', 'v1/', '/users/')
+    assert result == '/api/v1/users/'
