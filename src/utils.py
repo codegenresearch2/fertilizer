@@ -13,7 +13,7 @@ def url_join(*parts):
         str: A single URL string formed by joining the provided parts.
     """
     # Normalize the parts by stripping leading and trailing slashes
-    normalized_parts = [str(part).strip('/') for part in parts if part.strip('/')]
+    normalized_parts = [str(part).strip('/') for part in parts if isinstance(part, (str, list))]
     
     # Join the normalized parts using a single slash
     return '/'.join(normalized_parts)
