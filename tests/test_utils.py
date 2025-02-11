@@ -4,7 +4,7 @@ from src.utils import url_join
 
 
 class TestUrlJoin(SetupTeardown):
-  def test_joins_paths(self):
+  def test_joins_paths_without_none(self):
     path = url_join("http://example.com", "test", "file")
 
     assert path == "http://example.com/test/file"
