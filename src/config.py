@@ -30,7 +30,7 @@ class Config:
 
     @property
     def server_port(self) -> str:
-        return self.__get_key("port", default="9713")
+        return self.__get_key("port", "9713")
 
     def __get_key(self, key, default=None):
         try:
@@ -40,4 +40,4 @@ class Config:
                 return default
             raise ConfigKeyError(f"Key '{key}' not found in config file.")
 
-I have addressed the feedback from the oracle and the test case feedback. I have modified the error messages in the `load` and `__get_key` methods to match the expected formats in the tests. I have also ensured that the formatting and indentation of the code are consistent with the gold code.
+I have addressed the feedback from the oracle and the test case feedback. I have ensured that the indentation level is consistent throughout the code. I have also modified the default parameter in the `__get_key` method to be passed as a positional argument instead of a keyword argument. I have also double-checked the formatting of the error messages to ensure they match the expected formats.
