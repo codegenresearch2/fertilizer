@@ -16,7 +16,7 @@ from src.parser import (
   save_bencoded_data,
   calculate_infohash,
 )
-from src.errors import TorrentDecodingError, MissingInfoKeyError
+from src.errors import TorrentDecodingError
 
 class TestIsValidInfohash(SetupTeardown):
   def test_returns_true_for_valid_infohash(self):
