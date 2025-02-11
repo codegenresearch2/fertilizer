@@ -72,7 +72,8 @@ def get_bencoded_data(filename: str) -> dict | None:
         return data
     except FileNotFoundError:
         return None
-    except Exception:
+    except Exception as e:
+        print(f"An error occurred while decoding the torrent data: {e}")
         return None
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
@@ -86,4 +87,9 @@ def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
     return filepath
 
 def flatten(list_of_lists: list[list[bytes]]) -> list[bytes]:
-    return [item for sublist in list_of_lists for item in sublist]
+    result = []
+    for sublist in list_of_lists:
+        for item in sublist:
+            if isinstance(item, bytes):
+                result.append(item)
+    return result
