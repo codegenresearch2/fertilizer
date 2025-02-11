@@ -45,7 +45,7 @@ class TestGetAnnounceUrl(SetupTeardown):
     assert get_announce_url({b"announce": b"https://foo.bar"}) == [b"https://foo.bar"]
 
   def test_returns_url_if_present_in_trackers(self):
-    assert get_announce_url({b"trackers": [[b"https://foo.bar"], b"https://baz.qux"]}) == [b"https://foo.bar", b"https://baz.qux"]
+    assert get_announce_url({b"trackers": [[b"https://foo.bar"], [b"https://baz.qux"]]}) == [b"https://foo.bar", b"https://baz.qux"]
 
   def test_returns_none_if_absent(self):
     assert get_announce_url({}) is None
@@ -65,10 +65,10 @@ class TestGetOriginTracker(SetupTeardown):
     assert get_origin_tracker({b"announce": b"https://home.opsfet.ch/123abc"}) == OpsTracker
 
   def test_returns_red_based_on_trackers(self):
-    assert get_origin_tracker({b"trackers": [[b"https://flacsfor.me/123abc"], b"https://baz.qux"]}) == RedTracker
+    assert get_origin_tracker({b"trackers": [[b"https://flacsfor.me/123abc"], [b"https://baz.qux"]]}) == RedTracker
 
   def test_returns_ops_based_on_trackers(self):
-    assert get_origin_tracker({b"trackers": [[b"https://home.opsfet.ch/123abc"], b"https://baz.qux"]}) == OpsTracker
+    assert get_origin_tracker({b"trackers": [[b"https://home.opsfet.ch/123abc"], [b"https://baz.qux"]]}) == OpsTracker
 
   def test_returns_none_if_no_match(self):
     assert get_origin_tracker({}) is None
@@ -81,10 +81,11 @@ class TestCalculateInfohash(SetupTeardown):
     result = calculate_infohash(torrent_data)
     assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
 
-  def test_raises_error_for_missing_info_key(self):
+  def test_raises_if_no_info_key(self):
     torrent_data = {}
-    with pytest.raises(TorrentDecodingError):
+    with pytest.raises(TorrentDecodingError) as e:
       calculate_infohash(torrent_data)
+    assert str(e.value) == "Torrent data does not contain 'info' key"
 
 class TestRecalculateHashForNewSource(SetupTeardown):
   def test_replaces_source_and_returns_hash(self):
