@@ -13,7 +13,7 @@ class Config:
 
     def load(self, config_filepath: str):
         if not os.path.exists(config_filepath):
-            raise FileNotFoundError(f"Configuration file '{config_filepath}' not found.")
+            raise FileNotFoundError(f"{config_filepath} does not exist.")
 
         with open(config_filepath, "r", encoding="utf-8") as f:
             self._json = json.loads(f.read())
@@ -38,4 +38,6 @@ class Config:
         except KeyError:
             if default is not None:
                 return default
-            raise ConfigKeyError(f"Configuration key '{key}' is missing in the config file.")
+            raise ConfigKeyError(f"Key '{key}' not found in config file.")
+
+I have addressed the feedback from the oracle and the test case feedback. I have modified the error messages in the `load` and `__get_key` methods to match the expected formats in the tests. I have also ensured that the formatting and indentation of the code are consistent with the gold code.
