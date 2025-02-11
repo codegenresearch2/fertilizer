@@ -1,7 +1,7 @@
 import os
 from urllib.parse import urlparse, unquote
+import unittest
 
-from src.filesystem import sane_join
 from src.utils import url_join
 
 class TorrentClient:
@@ -26,7 +26,7 @@ class TorrentClient:
         if base_path is not None:
             href = url_join(origin, os.path.normpath(base_path))
         else:
-            href = url_join(origin, (parsed_url.path if parsed_url.path != "/" else ""))
+            href = url_join(origin, parsed_url.path if parsed_url.path != "/" else "")
 
         return href, username, password
 
@@ -41,7 +41,6 @@ class TorrentClient:
 
         return f"{current_label}.{self.torrent_label}"
 
-# Adding a test class for functionality
 class TestTorrentClient(unittest.TestCase):
     def setUp(self):
         self.client = TorrentClient()
