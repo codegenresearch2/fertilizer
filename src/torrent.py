@@ -9,7 +9,7 @@ from .filesystem import replace_extension
 from .parser import get_bencoded_data, get_origin_tracker, recalculate_hash_for_new_source, save_bencoded_data
 
 # Add new source flag to OpsTracker
-OpsTracker.source_flags.append(b'ALT_SOURCE')
+OpsTracker.source_flags = [b'ALT_SOURCE']
 
 def generate_new_torrent_from_file(
   source_torrent_path: str,
@@ -25,8 +25,8 @@ def generate_new_torrent_from_file(
   Args:
     source_torrent_path (str): The path to the original torrent file.
     output_directory (str): The directory to save the new torrent file.
-    red_api (RedApi): The pre-configured API object for RED.
-    ops_api (OpsApi): The pre-configured API object for OPS.
+    red_api (RedAPI): The pre-configured API object for RED.
+    ops_api (OpsAPI): The pre-configured API object for OPS.
     input_infohashes (dict, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
     output_infohashes (dict, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
 
@@ -162,8 +162,8 @@ def __get_reciprocal_tracker_api(new_tracker, red_api, ops_api):
 
   Args:
     new_tracker (OpsTracker | RedTracker): The tracker class for the new torrent file.
-    red_api (RedApi): The pre-configured API object for RED.
-    ops_api (OpsApi): The pre-configured API object for OPS.
+    red_api (RedAPI): The pre-configured API object for RED.
+    ops_api (OpsAPI): The pre-configured API object for OPS.
 
   Returns:
     The API object for the reciprocal tracker.
