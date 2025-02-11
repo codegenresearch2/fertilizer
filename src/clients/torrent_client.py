@@ -7,13 +7,13 @@ class TorrentClient:
         self.torrent_label = "fertilizer"
 
     def setup(self):
-        raise NotImplementedError("setup method is not implemented")
+        raise NotImplementedError
 
     def get_torrent_info(self, *_args, **_kwargs):
-        raise NotImplementedError("get_torrent_info method is not implemented")
+        raise NotImplementedError
 
     def inject_torrent(self, *_args, **_kwargs):
-        raise NotImplementedError("inject_torrent method is not implemented")
+        raise NotImplementedError
 
     def _extract_credentials_from_url(self, url, base_path=None):
         parsed_url = urlparse(url)
@@ -24,7 +24,7 @@ class TorrentClient:
         if base_path is not None:
             href = url_join(origin, os.path.normpath(base_path))
         else:
-            href = url_join(origin, parsed_url.path if parsed_url.path != "/" else "")
+            href = url_join(origin, parsed_url.path)
 
         return href, username, password
 
