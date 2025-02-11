@@ -13,7 +13,7 @@ def cli_entrypoint(args):
         red_api, ops_api = __verify_api_keys(config)
 
         if args.server:
-            port = os.environ.get("PORT", 9713)
+            port = config.server_port
             run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=port)
         elif args.input_file:
             print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
@@ -24,8 +24,8 @@ def cli_entrypoint(args):
         exit(1)
 
 def __verify_api_keys(config):
-    red_key = config.get('red_key', '')
-    ops_key = config.get('ops_key', '')
+    red_key = config.red_key
+    ops_key = config.ops_key
 
     if not red_key or not ops_key:
         raise ValueError("Both 'red_key' and 'ops_key' must be provided in the configuration.")
@@ -33,11 +33,10 @@ def __verify_api_keys(config):
     red_api = RedAPI(red_key)
     ops_api = OpsAPI(ops_key)
 
-    try:
-        red_api.announce_url
-        ops_api.announce_url
-    except Exception as e:
-        raise ValueError(f"Failed to verify API keys: {str(e)}")
+    # This will perform a lookup with the API and raise if there was a failure.
+    # Also caches the announce URL for future use which is a nice bonus
+    red_api.announce_url
+    ops_api.announce_url
 
     return red_api, ops_api
 
