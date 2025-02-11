@@ -20,7 +20,7 @@ def handle_error(
   if should_exit:
     sys.exit(1)
 
-class AuthenticationError(Exception):
+class TorrentClientAuthenticationError(Exception):
   pass
 
 class TorrentDecodingError(Exception):
