@@ -13,11 +13,11 @@ from src.errors import TorrentExistsInClientError
 from src.scanner import scan_torrent_directory, scan_torrent_file
 
 class TestScanTorrentFile(SetupTeardown):
-  def test_file_not_found(self, red_api, ops_api):
+  def test_file_not_found_error(self, red_api, ops_api):
     with pytest.raises(FileNotFoundError):
       scan_torrent_file("/tmp/nonexistent.torrent", "/tmp/output", red_api, ops_api, None)
 
-  def test_create_output_directory(self, red_api, ops_api):
+  def test_create_output_directory_if_not_exists(self, red_api, ops_api):
     copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
     shutil.rmtree("/tmp/new_output", ignore_errors=True)
 
@@ -74,7 +74,7 @@ class TestScanTorrentFile(SetupTeardown):
       "/tmp/input/red_source.torrent", "/tmp/output/ops_source.torrent", "OPS"
     )
 
-  def test_handle_bad_encoding(self, red_api, ops_api):
+  def test_handle_bad_encoding_in_other_torrent_name(self, red_api, ops_api):
     copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
     copy_and_mkdir(get_torrent_path("broken_name"), "/tmp/output/broken_name.torrent")
 
@@ -84,12 +84,19 @@ class TestScanTorrentFile(SetupTeardown):
 
       scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api, None)
 
+  def test_raise_error_if_torrent_has_no_info(self, red_api, ops_api):
+    with pytest.raises(TorrentDecodingError) as excinfo:
+      torrent_path = get_torrent_path("no_info")
+      scan_torrent_file(torrent_path, "/tmp/output", red_api, ops_api, None)
+
+    assert str(excinfo.value) == "Error decoding torrent file"
+
 class TestScanTorrentDirectory(SetupTeardown):
-  def test_input_directory_not_found(self, red_api, ops_api):
+  def test_input_directory_not_found_error(self, red_api, ops_api):
     with pytest.raises(FileNotFoundError):
       scan_torrent_directory("/tmp/nonexistent", "/tmp/output", red_api, ops_api, None)
 
-  def test_create_output_directory(self, red_api, ops_api):
+  def test_create_output_directory_if_not_exists(self, red_api, ops_api):
     shutil.rmtree("/tmp/new_output", ignore_errors=True)
     scan_torrent_directory("/tmp/input", "/tmp/new_output", red_api, ops_api, None)
 
@@ -266,12 +273,6 @@ class TestScanTorrentDirectory(SetupTeardown):
       "/tmp/input/red_source.torrent", "/tmp/output/OPS/foo [OPS].torrent", "OPS"
     )
 
-  def test_handle_bad_encoding(self, red_api, ops_api):
+  def test_handle_bad_encoding_in_other_torrent_name(self, red_api, ops_api):
     copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
-    copy_and_mkdir(get_torrent_path("broken_name"), "/tmp/input/broken_name.torrent")
-
-    with requests_mock.Mocker() as m:
-      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
-      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
-
-      scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None)
+    copy_and_mkdir(get_torrent_path("broken_name"), "/tmp/input/broken_name
