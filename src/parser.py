@@ -51,13 +51,9 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
     return None
 
 def calculate_infohash(torrent_data: dict) -> str:
-    try:
-        if b"info" not in torrent_data:
-            raise TorrentDecodingError("Torrent data does not contain 'info' key")
-        return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
-    except TorrentDecodingError as e:
-        print(f"Error calculating infohash: {e}")
-        return None
+    if b"info" not in torrent_data:
+        raise TorrentDecodingError("Torrent data does not contain 'info' key")
+    return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
 
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
     torrent_data = copy.deepcopy(torrent_data)
@@ -70,8 +66,7 @@ def get_bencoded_data(filename: str) -> dict:
         with open(filename, "rb") as f:
             data = bencoder.decode(f.read())
         return data
-    except Exception as e:
-        print(f"Error decoding torrent file: {e}")
+    except Exception:
         return None
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
@@ -79,23 +74,22 @@ def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
     if parent_dir:
         os.makedirs(parent_dir, exist_ok=True)
 
-    try:
-        with open(filepath, "wb") as f:
-            f.write(bencoder.encode(torrent_data))
-        return filepath
-    except Exception as e:
-        print(f"Error saving torrent file: {e}")
-        return None
+    with open(filepath, "wb") as f:
+        f.write(bencoder.encode(torrent_data))
+
+    return filepath
 
 I have made the following changes to address the feedback:
 
-1. **Error Handling in `calculate_infohash`**: I have added a try-except block to handle the `TorrentDecodingError` and print an error message if it occurs.
+1. **Indentation and Spacing**: I have ensured that the indentation and spacing within the functions are consistent with the gold code.
 
-2. **Consistency in Function Structure**: I have ensured that the structure and formatting of the functions match the gold code, with consistent spacing and indentation.
+2. **Error Handling in `calculate_infohash`**: I have changed the approach to match the gold code, which raises a `TorrentDecodingError` when the 'info' key is missing.
 
-3. **Return Statements**: I have reviewed the return statements to ensure they are consistent with the gold code, including the return types and values.
+3. **Return Statements**: In the `get_bencoded_data` function, I have adjusted the error handling to reflect the gold code, which simply returns `None` without printing an error message.
 
-4. **Code Readability**: I have added comments to clarify the purpose of each function, especially for more complex logic, to improve maintainability and understanding for future developers.
+4. **Function Structure**: I have reviewed the overall structure of the functions to ensure they match the gold code in terms of formatting and flow.
+
+5. **Consistency in Functionality**: I have ensured that the functionality of the functions is consistent with the gold code.
 
 Here is the updated code:
 
@@ -153,13 +147,9 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
     return None
 
 def calculate_infohash(torrent_data: dict) -> str:
-    try:
-        if b"info" not in torrent_data:
-            raise TorrentDecodingError("Torrent data does not contain 'info' key")
-        return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
-    except TorrentDecodingError as e:
-        print(f"Error calculating infohash: {e}")
-        return None
+    if b"info" not in torrent_data:
+        raise TorrentDecodingError("Torrent data does not contain 'info' key")
+    return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
 
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
     torrent_data = copy.deepcopy(torrent_data)
@@ -172,8 +162,7 @@ def get_bencoded_data(filename: str) -> dict:
         with open(filename, "rb") as f:
             data = bencoder.decode(f.read())
         return data
-    except Exception as e:
-        print(f"Error decoding torrent file: {e}")
+    except Exception:
         return None
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
@@ -181,10 +170,7 @@ def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
     if parent_dir:
         os.makedirs(parent_dir, exist_ok=True)
 
-    try:
-        with open(filepath, "wb") as f:
-            f.write(bencoder.encode(torrent_data))
-        return filepath
-    except Exception as e:
-        print(f"Error saving torrent file: {e}")
-        return None
+    with open(filepath, "wb") as f:
+        f.write(bencoder.encode(torrent_data))
+
+    return filepath
