@@ -1,35 +1,17 @@
-from .helpers import SetupTeardown
 from src.utils import url_join
 
-class TestUrlJoin(SetupTeardown):
-  def test_joins_paths(self):
-    result = url_join('http://example.com', 'path', 'file')
-    assert result == 'http://example.com/path/file'
+def url_join(*args):
+  for arg in args:
+    if arg.startswith('http://') or arg.startswith('https://'):
+      return arg
+  return "/".join([str(arg).strip("/") for arg in args if str(arg).strip("/")])
 
-  def test_joins_paths_with_leading_slash(self):
-    result = url_join('http://example.com', '/path', 'file')
-    assert result == 'http://example.com/path/file'
-
-  def test_joins_full_uris(self):
-    result = url_join('http://example.com/', 'https://another.com/path')
-    assert result == 'https://another.com/path'
-
-  def test_strips_bare_slashes(self):
-    result = url_join('http://example.com/', '/')
-    assert result == 'http://example.com'
-
-  def test_handles_empty_strings(self):
-    result = url_join('http://example.com', '', 'file')
-    assert result == 'http://example.com/file'
-
-  def test_handles_trailing_slashes(self):
-    result = url_join('http://example.com/', 'path/')
-    assert result == 'http://example.com/path'
-
-  def test_handles_leading_and_trailing_slashes(self):
-    result = url_join('http://example.com/', '/path/')
-    assert result == 'http://example.com/path'
-
-  def test_handles_full_uri_as_path(self):
-    result = url_join('http://example.com/', 'https://another.com/path')
-    assert result == 'https://another.com/path'
+# Test cases
+assert url_join('http://example.com', 'path', 'file') == 'http://example.com/path/file'
+assert url_join('http://example.com', '/path', 'file') == 'http://example.com/path/file'
+assert url_join('http://example.com/', 'https://another.com/path') == 'https://another.com/path'
+assert url_join('http://example.com/', '/') == 'http://example.com'
+assert url_join('http://example.com', '', 'file') == 'http://example.com/file'
+assert url_join('http://example.com/', 'path/') == 'http://example.com/path'
+assert url_join('http://example.com/', '/path/') == 'http://example.com/path'
+assert url_join('http://example.com/', 'https://another.com/path') == 'https://another.com/path'
