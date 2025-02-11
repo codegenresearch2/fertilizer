@@ -1,10 +1,14 @@
 from src.utils import url_join
 
 def url_join(*args):
-  for arg in args:
-    if arg.startswith('http://') or arg.startswith('https://'):
-      return arg
-  return "/".join([str(arg).strip("/") for arg in args if str(arg).strip("/")])
+    base_url = ''
+    paths = []
+    for arg in args:
+        if arg.startswith('http://') or arg.startswith('https://'):
+            base_url = arg.rstrip('/')
+        else:
+            paths.append(arg.strip('/'))
+    return base_url + '/' + '/'.join(paths)
 
 # Test cases
 assert url_join('http://example.com', 'path', 'file') == 'http://example.com/path/file'
