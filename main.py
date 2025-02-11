@@ -14,10 +14,10 @@ def cli_entrypoint(args):
 
         if args.server:
             run_webserver(
-                input_directory=args.input_directory,
-                output_directory=args.output_directory,
-                red_api=red_api,
-                ops_api=ops_api,
+                args.input_directory,
+                args.output_directory,
+                red_api,
+                ops_api,
                 port=config.server_port
             )
         elif args.input_file:
@@ -25,7 +25,7 @@ def cli_entrypoint(args):
         elif args.input_directory:
             print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
     except Exception as e:
-        print(f"{Fore.RED}{str(e)}{Fore.RESET}")
+        print(f"{Fore.RED}Error: {str(e)}{Fore.RESET}")
         exit(1)
 
 def __verify_api_keys(config):
