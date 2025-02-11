@@ -1,4 +1,5 @@
 import os
+import pytest
 from src.errors import TorrentDecodingError
 from src.trackers import RedTracker, OpsTracker
 from src.parser import (
@@ -91,7 +92,7 @@ class TestCalculateInfohash(SetupTeardown):
 
     def test_raises_exception_if_info_key_missing(self):
         torrent_data = {}
-        with self.assertRaises(TorrentDecodingError):
+        with pytest.raises(TorrentDecodingError, match="Torrent data does not contain 'info' key"):
             calculate_infohash(torrent_data)
 
 
