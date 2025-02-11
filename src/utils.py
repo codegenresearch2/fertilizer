@@ -4,9 +4,9 @@ def flatten(arg):
     return [x for sub in arg for x in flatten(sub)]
 
 
-Based on the feedback, the tests are failing due to a `SyntaxError` caused by an unterminated string literal in the `src/utils.py` file. The error message indicates that there is a problematic line that contains a comment or feedback text that was mistakenly left in the code.
+Based on the feedback, the tests are failing due to a `SyntaxError` caused by an unterminated string literal in the `src/utils.py` file. This error is likely the result of a problematic line that contains feedback text or a comment that was mistakenly left in the code.
 
-To fix the failures, the problematic line containing the feedback text should be removed entirely from the `src/utils.py` file. Here's the updated code:
+To fix the failures, the specific change needed is to remove the problematic line containing the feedback text entirely from the `src/utils.py` file. Here's the updated code:
 
 
 def flatten(arg):
