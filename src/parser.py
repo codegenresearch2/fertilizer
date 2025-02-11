@@ -33,7 +33,7 @@ def get_announce_url(torrent_data: dict) -> list[bytes] | None:
 
     from_trackers = torrent_data.get(b"trackers", [])
     if from_trackers:
-        return flatten([[item] for item in from_trackers if isinstance(item, bytes)])
+        return flatten(from_trackers)
 
     return None
 
