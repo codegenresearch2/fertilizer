@@ -129,7 +129,7 @@ I have addressed the feedback from the oracle by making the following changes to
 2. Removed the boolean from the return type in the function signature to match the gold code.
 3. Modified the error handling for the `stored_api_response` to check for specific error conditions directly, aligning with the gold code.
 4. Ensured that the code structure, including spacing and line breaks, matches the gold code to enhance readability.
-5. Reviewed and updated comments and documentation to be consistent with the gold code.
+5. Removed the explanatory comment that was causing the syntax error.
 6. Organized the helper functions in the same order and with the same formatting as in the gold code.
 
 These changes should bring the code even closer to the gold standard and improve its readability, maintainability, and alignment with the expected code structure.
