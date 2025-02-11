@@ -3,7 +3,7 @@ import requests
 from pathlib import Path
 from requests.structures import CaseInsensitiveDict
 
-from ..filesystem import sane_join
+from ..utils import url_join
 from ..parser import get_bencoded_data, calculate_infohash
 from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from .torrent_client import TorrentClient
@@ -62,6 +62,7 @@ class Qbittorrent(TorrentClient):
         return new_torrent_infohash
 
     def __authenticate(self):
+        """Authenticates with qBittorrent and retrieves the session cookie."""
         href, username, password = self._qbit_url_parts
 
         try:
@@ -71,7 +72,7 @@ class Qbittorrent(TorrentClient):
         except requests.RequestException as e:
             raise TorrentClientAuthenticationError(f"qBittorrent login failed: {e}")
 
-        self._qbit_cookie = response.cookies.get_dict().get("SID")
+        self._qbit_cookie = response.cookies.get("SID")
         if not self._qbit_cookie:
             raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
@@ -84,10 +85,11 @@ class Qbittorrent(TorrentClient):
 
     def __request(self, path, data=None, files=None):
         href, _, _ = self._qbit_url_parts
+        full_url = url_join(href, path)
 
         try:
             response = requests.post(
-                f"{href}/{path}",
+                full_url,
                 headers=CaseInsensitiveDict({"Cookie": f"SID={self._qbit_cookie}"}),
                 data=data,
                 files=files,
