@@ -2,7 +2,7 @@ import os
 import copy
 import bencoder
 from hashlib import sha1
-from .errors import TorrentDecodingError
+from .errors import TorrentDecodingError, UnknownTrackerError
 from .trackers import RedTracker, OpsTracker
 from .utils import flatten
 
@@ -32,7 +32,10 @@ def get_announce_url(torrent_data: dict) -> list[bytes] | None:
         return from_announce if isinstance(from_announce, list) else [from_announce]
 
     from_trackers = torrent_data.get(b"trackers", [])
-    return flatten([[item] for item in from_trackers if isinstance(item, bytes)])
+    if from_trackers:
+        return flatten([[item] for item in from_trackers if isinstance(item, bytes)])
+
+    return None
 
 def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
     source = get_source(torrent_data)
