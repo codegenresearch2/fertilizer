@@ -65,7 +65,13 @@ def generate_new_torrent_from_file(
       if new_torrent_filepath:
         torrent_id = __get_torrent_id(api_response)
 
-        new_torrent_data[b"info"][b"source"] = new_source.encode()  # Ensure new_source is encoded to bytes
+        # Ensure new_source is encoded to bytes only if it is not already
+        if not isinstance(new_source, bytes):
+          new_source_bytes = new_source.encode()
+        else:
+          new_source_bytes = new_source
+
+        new_torrent_data[b"info"][b"source"] = new_source_bytes
         new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
 
