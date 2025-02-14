@@ -9,8 +9,8 @@ class TestTrackerMethods(SetupTeardown):
     assert OpsTracker.source_flags_for_search() == [b"OPS", b"APL"]
 
   def test_source_flags_for_creation(self):
-    assert RedTracker.source_flags_for_creation() == [b"RED", b"PTH", b""]
-    assert OpsTracker.source_flags_for_creation() == [b"OPS", b"APL", b""]
+    assert RedTracker.source_flags_for_creation() == [b"RED", b"PTH"]
+    assert OpsTracker.source_flags_for_creation() == [b"OPS", b"APL"]
 
   def test_announce_url(self):
     assert RedTracker.announce_url() == b"flacsfor.me"
