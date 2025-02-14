@@ -5,7 +5,7 @@ class Tracker:
 
   @staticmethod
   def source_flags_for_creation():
-    raise NotImplementedError
+    return [b"OPS", b"APL"]
 
   @staticmethod
   def announce_url():
@@ -26,10 +26,6 @@ class OpsTracker(Tracker):
     return [b"OPS", b"APL"]
 
   @staticmethod
-  def source_flags_for_creation():
-    return [b"OPS", b"APL", b""]
-
-  @staticmethod
   def announce_url():
     return b"home.opsfet.ch"
 
@@ -46,10 +42,6 @@ class RedTracker(Tracker):
   @staticmethod
   def source_flags_for_search():
     return [b"RED", b"PTH"]
-
-  @staticmethod
-  def source_flags_for_creation():
-    return [b"RED", b"PTH", b""]
 
   @staticmethod
   def announce_url():
