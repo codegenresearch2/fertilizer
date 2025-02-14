@@ -5,7 +5,7 @@ class Tracker:
 
   @staticmethod
   def source_flags_for_creation():
-    raise NotImplementedError
+    return []
 
   @staticmethod
   def announce_url():
