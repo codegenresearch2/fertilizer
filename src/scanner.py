@@ -1,5 +1,4 @@
 import os
-
 from .api import RedAPI, OpsAPI
 from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
 from .progress import Progress
@@ -22,43 +21,43 @@ def scan_torrent_file(
   ops_api: OpsAPI,
   injector: Injection | None,
 ) -> str:
-  """
-  Scans a single .torrent file and generates a new one using the tracker API.
-
-  Args:
-    `source_torrent_path` (`str`): The path to the .torrent file.
-    `output_directory` (`str`): The directory to save the new .torrent files.
-    `red_api` (`RedAPI`): The pre-configured RED tracker API.
-    `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.
-    `injector` (`Injection`): The pre-configured torrent Injection object.
-  Returns:
-    str: The path to the new .torrent file.
-  Raises:
-    See `generate_new_torrent_from_file`.
-  """
+  """\n  Scans a single .torrent file and generates a new one using the tracker API.\n\n  Args:\n    `source_torrent_path` (`str`): The path to the .torrent file.\n    `output_directory` (`str`): The directory to save the new .torrent files.\n    `red_api` (`RedAPI`): The pre-configured RED tracker API.\n    `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.\n    `injector` (`Injection`): The pre-configured torrent Injection object.\n  Returns:\n    str: The path to the new .torrent file.\n  Raises:\n    TorrentDecodingError: if the original torrent file could not be decoded.\n    UnknownTrackerError: if the original torrent file is not from OPS or RED.\n    TorrentNotFoundError: if the original torrent file could not be found on the reciprocal tracker.\n    TorrentAlreadyExistsError: if the new torrent file already exists in the input or output directory.\n    TorrentExistsInClientError: if the new torrent file already exists in the torrent client.\n    Exception: if an unknown error occurs.\n  """
   source_torrent_path = assert_path_exists(source_torrent_path)
   output_directory = mkdir_p(output_directory)
 
   output_torrents = list_files_of_extension(output_directory, ".torrent")
   output_infohashes = __collect_infohashes_from_files(output_torrents)
 
-  new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
-    source_torrent_path,
-    output_directory,
-    red_api,
-    ops_api,
-    input_infohashes={},
-    output_infohashes=output_infohashes,
-  )
-
-  if injector:
-    injector.inject_torrent(
+  try:
+    new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
       source_torrent_path,
-      new_torrent_filepath,
-      new_tracker.site_shortname(),
+      output_directory,
+      red_api,
+      ops_api,
+      input_infohashes={},
+      output_infohashes=output_infohashes,
     )
 
-  return new_torrent_filepath
+    if injector:
+      injector.inject_torrent(
+        source_torrent_path,
+        new_torrent_filepath,
+        new_tracker.site_shortname(),
+      )
+
+    return new_torrent_filepath
+  except TorrentDecodingError as e:
+    raise TorrentDecodingError(str(e))
+  except UnknownTrackerError as e:
+    raise UnknownTrackerError(str(e))
+  except TorrentNotFoundError as e:
+    raise TorrentNotFoundError(str(e))
+  except TorrentAlreadyExistsError as e:
+    raise TorrentAlreadyExistsError(str(e))
+  except TorrentExistsInClientError as e:
+    raise TorrentExistsInClientError(str(e))
+  except Exception as e:
+    raise Exception(str(e))
 
 
 def scan_torrent_directory(
@@ -68,21 +67,7 @@ def scan_torrent_directory(
   ops_api: OpsAPI,
   injector: Injection | None,
 ) -> str:
-  """
-  Scans a directory for .torrent files and generates new ones using the tracker APIs.
-
-  Args:
-    `input_directory` (`str`): The directory containing the .torrent files.
-    `output_directory` (`str`): The directory to save the new .torrent files.
-    `red_api` (`RedAPI`): The pre-configured RED tracker API.
-    `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.
-    `injector` (`Injection`): The pre-configured torrent Injection object.
-  Returns:
-    str: A report of the scan.
-  Raises:
-    `FileNotFoundError`: if the input directory does not exist.
-  """
-
+  """\n  Scans a directory for .torrent files and generates new ones using the tracker APIs.\n\n  Args:\n    `input_directory` (`str`): The directory containing the .torrent files.\n    `output_directory` (`str`): The directory to save the new .torrent files.\n    `red_api` (`RedAPI`): The pre-configured RED tracker API.\n    `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.\n    `injector` (`Injection`): The pre-configured torrent Injection object.\n  Returns:\n    str: A report of the scan.\n  Raises:\n    FileNotFoundError: if the input directory does not exist.\n  """
   input_directory = assert_path_exists(input_directory)
   output_directory = mkdir_p(output_directory)
 
@@ -155,7 +140,7 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
       if torrent_data:
         infohash = calculate_infohash(torrent_data)
         infohash_dict[infohash] = filepath
-    except Exception:
+    except UnicodeDecodeError:
       continue
 
   return infohash_dict
