@@ -3,10 +3,9 @@ from time import sleep
 
 from colorama import Fore
 
-
 def handle_error(
   description: str,
-  exception_details: (str | None) = None,
+  exception_details: str | None = None,
   wait_time: int = 0,
   extra_description: str = "",
   should_exit: bool = False,
@@ -21,38 +20,26 @@ def handle_error(
   if should_exit:
     sys.exit(1)
 
-
 class AuthenticationError(Exception):
   pass
-
 
 class TorrentDecodingError(Exception):
   pass
 
-
 class UnknownTrackerError(Exception):
   pass
-
 
 class TorrentNotFoundError(Exception):
   pass
 
-
 class TorrentAlreadyExistsError(Exception):
   pass
-
 
 class ConfigKeyError(Exception):
   pass
 
-
 class TorrentClientError(Exception):
   pass
-
-
-class TorrentClientAuthenticationError(Exception):
-  pass
-
 
 class TorrentInjectionError(Exception):
   pass
