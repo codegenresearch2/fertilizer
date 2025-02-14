@@ -1,8 +1,9 @@
-def flatten(arg):
-  if not isinstance(arg, list):
-    return [arg]
-  return [x for sub in arg for x in flatten(sub)]
+from .helpers import SetupTeardown
+from src.utils import url_join
 
+class TestFlatten(SetupTeardown):
+  def test_flattens_list(self):
+    assert url_join([1, [2, 3], 4]) == [1, 2, 3, 4]
 
-def url_join(*args):
-  return "/".join([str(arg).strip("/") for arg in args if str(arg).strip("/")])
+  def test_returns_already_flat_list(self):
+    assert url_join([1, 2, 3]) == [1, 2, 3]
