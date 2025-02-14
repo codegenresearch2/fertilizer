@@ -14,7 +14,6 @@ from .errors import (
 )
 from .injection import Injection
 
-
 def scan_torrent_file(
   source_torrent_path: str,
   output_directory: str,
@@ -22,25 +21,9 @@ def scan_torrent_file(
   ops_api: OpsAPI,
   injector: Injection | None,
 ) -> str:
-  """
-  Scans a single .torrent file and generates a new one using the tracker API.
-
-  Args:
-    `source_torrent_path` (`str`): The path to the .torrent file.
-    `output_directory` (`str`): The directory to save the new .torrent files.
-    `red_api` (`RedAPI`): The pre-configured RED tracker API.
-    `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.
-    `injector` (`Injection`): The pre-configured torrent Injection object.
-  Returns:
-    str: The path to the new .torrent file.
-  Raises:
-    See `generate_new_torrent_from_file`.
-  """
   source_torrent_path = assert_path_exists(source_torrent_path)
   output_directory = mkdir_p(output_directory)
-
-  output_torrents = list_files_of_extension(output_directory, ".torrent")
-  output_infohashes = __collect_infohashes_from_files(output_torrents)
+  output_infohashes = __collect_infohashes_from_files(list_files_of_extension(output_directory, ".torrent"))
 
   new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
     source_torrent_path,
@@ -60,7 +43,6 @@ def scan_torrent_file(
 
   return new_torrent_filepath
 
-
 def scan_torrent_directory(
   input_directory: str,
   output_directory: str,
@@ -68,21 +50,6 @@ def scan_torrent_directory(
   ops_api: OpsAPI,
   injector: Injection | None,
 ) -> str:
-  """
-  Scans a directory for .torrent files and generates new ones using the tracker APIs.
-
-  Args:
-    `input_directory` (`str`): The directory containing the .torrent files.
-    `output_directory` (`str`): The directory to save the new .torrent files.
-    `red_api` (`RedAPI`): The pre-configured RED tracker API.
-    `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.
-    `injector` (`Injection`): The pre-configured torrent Injection object.
-  Returns:
-    str: A report of the scan.
-  Raises:
-    `FileNotFoundError`: if the input directory does not exist.
-  """
-
   input_directory = assert_path_exists(input_directory)
   output_directory = mkdir_p(output_directory)
 
@@ -124,10 +91,10 @@ def scan_torrent_directory(
           f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
         )
     except TorrentDecodingError as e:
-      p.error.print(str(e))
+      p.error.print(f"Error decoding torrent file: {str(e)}")
       continue
     except UnknownTrackerError as e:
-      p.skipped.print(str(e))
+      p.skipped.print(f"Unknown tracker error: {str(e)}")
       continue
     except TorrentAlreadyExistsError as e:
       p.already_exists.print(str(e))
@@ -139,11 +106,10 @@ def scan_torrent_directory(
       p.not_found.print(str(e))
       continue
     except Exception as e:
-      p.error.print(str(e))
+      p.error.print(f"An unknown error occurred: {str(e)}")
       continue
 
   return p.report()
-
 
 def __collect_infohashes_from_files(files: list[str]) -> dict:
   infohash_dict = {}
@@ -151,11 +117,12 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
   for filepath in files:
     try:
       torrent_data = get_bencoded_data(filepath)
-
-      if torrent_data:
+      if torrent_data and b'info' in torrent_data:
         infohash = calculate_infohash(torrent_data)
         infohash_dict[infohash] = filepath
-    except Exception:
+    except UnicodeDecodeError:
+      continue
+    except TorrentDecodingError:
       continue
 
   return infohash_dict
