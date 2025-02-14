@@ -21,35 +21,26 @@ def generate_new_torrent_from_file(
   ops_api: OpsAPI,
   input_infohashes: dict = {},
   output_infohashes: dict = {},
-) -> tuple[OpsTracker | RedTracker, str]:
-  """
-  Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
+) -> tuple[OpsTracker | RedTracker, str, bool]:
+  """\n  Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.\n\n  Args:\n    `source_torrent_path` (`str`): The path to the original torrent file.\n    `output_directory` (`str`): The directory to save the new torrent file.\n    `red_api` (`RedApi`): The pre-configured API object for RED.\n    `ops_api` (`OpsApi`): The pre-configured API object for OPS.\n    `input_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.\n    `output_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.\n  Returns:\n    A tuple containing the new tracker class (`RedTracker` or `OpsTracker`), the path to the new torrent file, and a boolean\n    representing whether the torrent already existed (False: created just now, True: torrent file already existed).\n  Raises:\n    `TorrentDecodingError`: if the original torrent file could not be decoded.\n    `UnknownTrackerError`: if the original torrent file is not from OPS or RED.\n    `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.\n    `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.\n    `Exception`: if an unknown error occurs.\n  """
 
-  Args:
-    `source_torrent_path` (`str`): The path to the original torrent file.
-    `output_directory` (`str`): The directory to save the new torrent file.
-    `red_api` (`RedApi`): The pre-configured API object for RED.
-    `ops_api` (`OpsApi`): The pre-configured API object for OPS.
-    `input_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
-    `output_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
-  Returns:
-    A tuple containing the new tracker class (`RedTracker` or `OpsTracker`), the path to the new torrent file, and a boolean
-    representing whether the torrent already existed (False: created just now, True: torrent file already existed).
-  Raises:
-    `TorrentDecodingError`: if the original torrent file could not be decoded.
-    `UnknownTrackerError`: if the original torrent file is not from OPS or RED.
-    `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.
-    `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
-    `Exception`: if an unknown error occurs.
-  """
+  try:
+    source_torrent_data, source_tracker = __get_bencoded_data_and_tracker(source_torrent_path)
+  except TorrentDecodingError as e:
+    raise TorrentDecodingError(f"Error decoding torrent file: {e}")
+  except UnknownTrackerError as e:
+    raise UnknownTrackerError(f"Torrent not from OPS or RED based on source or announce URL: {e}")
 
-  source_torrent_data, source_tracker = __get_bencoded_data_and_tracker(source_torrent_path)
   new_torrent_data = copy.deepcopy(source_torrent_data)
   new_tracker = source_tracker.reciprocal_tracker()
   new_tracker_api = __get_reciprocal_tracker_api(new_tracker, red_api, ops_api)
   stored_api_response = None
 
-  all_possible_hashes = __calculate_all_possible_hashes(source_torrent_data, new_tracker.source_flags_for_creation())
+  try:
+    all_possible_hashes = __calculate_all_possible_hashes(source_torrent_data, new_tracker.source_flags_for_creation())
+  except Exception as e:
+    raise Exception(f"Error calculating all possible hashes: {e}")
+
   found_input_hash = __check_matching_hashes(all_possible_hashes, input_infohashes)
   found_output_hash = __check_matching_hashes(all_possible_hashes, output_infohashes)
 
@@ -61,27 +52,43 @@ def generate_new_torrent_from_file(
     return (new_tracker, output_infohashes[found_output_hash], True)
 
   for new_source in new_tracker.source_flags_for_creation():
-    new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
-    stored_api_response = new_tracker_api.find_torrent(new_hash)
+    try:
+      new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
+    except Exception as e:
+      raise Exception(f"Error recalculating hash for new source: {e}")
+
+    try:
+      stored_api_response = new_tracker_api.find_torrent(new_hash)
+    except Exception as e:
+      raise Exception(f"Error finding torrent on reciprocal tracker: {e}")
 
     if stored_api_response["status"] == "success":
-      new_torrent_filepath = __generate_torrent_output_filepath(
-        stored_api_response,
-        new_tracker,
-        new_source.decode("utf-8"),
-        output_directory,
-      )
+      try:
+        new_torrent_filepath = __generate_torrent_output_filepath(
+          stored_api_response,
+          new_tracker,
+          new_source.decode("utf-8"),
+          output_directory,
+        )
+      except Exception as e:
+        raise Exception(f"Error generating torrent output filepath: {e}")
 
       if os.path.exists(new_torrent_filepath):
         return (new_tracker, new_torrent_filepath, True)
 
       if new_torrent_filepath:
-        torrent_id = __get_torrent_id(stored_api_response)
+        try:
+          torrent_id = __get_torrent_id(stored_api_response)
+        except Exception as e:
+          raise Exception(f"Error getting torrent ID: {e}")
 
-        new_torrent_data[b"info"][b"source"] = new_source  # This is already bytes rather than str
-        new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
-        new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
-        save_bencoded_data(new_torrent_filepath, new_torrent_data)
+        try:
+          new_torrent_data[b"info"][b"source"] = new_source.encode()  # Ensure bytes
+          new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
+          new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
+          save_bencoded_data(new_torrent_filepath, new_torrent_data)
+        except Exception as e:
+          raise Exception(f"Error saving bencoded data: {e}")
 
         return (new_tracker, new_torrent_filepath, False)
 
@@ -128,17 +135,11 @@ def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
 
 
 def __get_bencoded_data_and_tracker(torrent_path):
-  # The fastresume stuff is to support qBittorrent since it doesn't store
-  # announce URLs in the torrent file IFF we're taking the file from `BT_backup`.
-  #
-  # qbit stores that information in a sidecar file that has the exact same name
-  # as the torrent file but with a `.fastresume` extension instead. It's also stored
-  # in a list of lists called `trackers` in this `.fastresume` file instead of `announce`.
   fastresume_path = replace_extension(torrent_path, ".fastresume")
   source_torrent_data = get_bencoded_data(torrent_path)
   fastresume_data = get_bencoded_data(fastresume_path)
 
-  if not source_torrent_data or not source_torrent_data.get(b"info"):
+  if not source_torrent_data:
     raise TorrentDecodingError("Error decoding torrent file")
 
   torrent_tracker = get_origin_tracker(source_torrent_data)
